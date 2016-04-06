@@ -1,4 +1,4 @@
-package medvedev.ilya.monitor.service.mem.util;
+package medvedev.ilya.monitor.sensor.mem.util;
 
 import java.util.Scanner;
 

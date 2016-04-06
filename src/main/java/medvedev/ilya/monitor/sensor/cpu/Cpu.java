@@ -1,7 +1,8 @@
-package medvedev.ilya.monitor.service.cpu;
+package medvedev.ilya.monitor.sensor.cpu;
 
-import medvedev.ilya.monitor.service.SensorLoad;
-import medvedev.ilya.monitor.service.SensorValue;
+import medvedev.ilya.monitor.sensor.Sensor;
+import medvedev.ilya.monitor.sensor.SensorLoad;
+import medvedev.ilya.monitor.sensor.SensorValue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,13 +13,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
-public class Cpu {
+public class Cpu implements Sensor {
     private final File file = new File("/proc/stat");
 
     private final Map<String, SensorLoad> preSensorLoadMap = new HashMap<>();
 
-    public List<SensorValue> getSensorValue() {
-        final List<SensorLoad> sensorLoadList = getSensorLoad();
+    public List<SensorValue> sensorValue() {
+        final List<SensorLoad> sensorLoadList = sensorLoad();
 
         return sensorLoadList.parallelStream()
                 .map(sensorLoad -> {
@@ -30,7 +31,6 @@ public class Cpu {
 
                     final long used = sensorLoad.getUsed();
                     final long preUsed = preSensorLoad.getUsed();
-
 
                     final double value;
                     if (preUsed == used) {
@@ -48,7 +48,7 @@ public class Cpu {
                 .collect(Collectors.toList());
     }
 
-    private List<SensorLoad> getSensorLoad() {
+    private List<SensorLoad> sensorLoad() {
         final List<SensorLoad> sensorLoadList = new ArrayList<>();
 
         try (final Scanner scanner = new Scanner(file)) {

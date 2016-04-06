@@ -1,4 +1,4 @@
-package medvedev.ilya.monitor.service;
+package medvedev.ilya.monitor.sensor;
 
 public class SensorLoad {
     private final String name;

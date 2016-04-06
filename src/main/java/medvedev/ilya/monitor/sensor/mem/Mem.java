@@ -1,8 +1,9 @@
-package medvedev.ilya.monitor.service.mem;
+package medvedev.ilya.monitor.sensor.mem;
 
-import medvedev.ilya.monitor.service.SensorLoad;
-import medvedev.ilya.monitor.service.SensorValue;
-import medvedev.ilya.monitor.service.mem.util.ScannerCommon;
+import medvedev.ilya.monitor.sensor.Sensor;
+import medvedev.ilya.monitor.sensor.SensorLoad;
+import medvedev.ilya.monitor.sensor.SensorValue;
+import medvedev.ilya.monitor.sensor.mem.util.ScannerCommon;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,11 +14,11 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
-public class Mem {
+public class Mem implements Sensor {
     private final File file = new File("/proc/meminfo");
 
-    public List<SensorValue> getMemLoad() {
-        return getSensorLoad().parallelStream()
+    public List<SensorValue> sensorValue() {
+        return sensorLoad().parallelStream()
                 .map(sensorLoad -> {
                     final String name = sensorLoad.getName();
 
@@ -31,7 +32,7 @@ public class Mem {
                 .collect(Collectors.toList());
     }
 
-    private List<SensorLoad> getSensorLoad() {
+    private List<SensorLoad> sensorLoad() {
         final Map<String, Long> stat = new HashMap<String, Long>() {{
             /**
              * Total usable RAM (i.e., physical RAM minus a few

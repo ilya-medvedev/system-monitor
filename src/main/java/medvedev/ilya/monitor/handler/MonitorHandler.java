@@ -2,9 +2,9 @@ package medvedev.ilya.monitor.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import medvedev.ilya.monitor.service.cpu.Cpu;
-import medvedev.ilya.monitor.service.SensorValue;
-import medvedev.ilya.monitor.service.mem.Mem;
+import medvedev.ilya.monitor.sensor.cpu.Cpu;
+import medvedev.ilya.monitor.sensor.SensorValue;
+import medvedev.ilya.monitor.sensor.mem.Mem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.CloseStatus;
@@ -41,8 +41,8 @@ public class MonitorHandler extends AbstractWebSocketHandler {
             LOG.debug("Start");
 
             scheduledFuture = executorService.scheduleAtFixedRate(() -> {
-                final List<SensorValue> cpuValues = cpu.getSensorValue();
-                final List<SensorValue> memValues = mem.getMemLoad();
+                final List<SensorValue> cpuValues = cpu.sensorValue();
+                final List<SensorValue> memValues = mem.sensorValue();
 
                 final List<SensorValue> values = new ArrayList<SensorValue>() {{
                     addAll(cpuValues);
