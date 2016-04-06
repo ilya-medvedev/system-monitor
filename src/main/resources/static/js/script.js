@@ -100,11 +100,11 @@ $(function() {
         var json = message.data;
         var data = $.parseJSON(json);
 
-//        data.sort(function(a, b) {
+//        data.sensors.sort(function(a, b) {
 //            return a.name.localeCompare(b.name);
 //        });
 
-        $.each(data, function(index, element) {
+        $.each(data.sensors, function(index, element) {
             var name = element.name;
 
             var chart;
@@ -117,7 +117,7 @@ $(function() {
             }
 
             var series = chart.get(name);
-            var point = [message.timeStamp, element.value];
+            var point = [data.time, element.value];
 
             if (series == null) {
                 chart.addSeries({

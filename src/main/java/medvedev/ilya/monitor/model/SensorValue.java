@@ -1,4 +1,4 @@
-package medvedev.ilya.monitor.sensor;
+package medvedev.ilya.monitor.model;
 
 public class SensorValue {
     private final String name;

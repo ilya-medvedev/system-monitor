@@ -1,8 +1,8 @@
 package medvedev.ilya.monitor.sensor.cpu;
 
 import medvedev.ilya.monitor.sensor.Sensor;
-import medvedev.ilya.monitor.sensor.SensorLoad;
-import medvedev.ilya.monitor.sensor.SensorValue;
+import medvedev.ilya.monitor.model.SensorLoad;
+import medvedev.ilya.monitor.model.SensorValue;
 
 import java.io.File;
 import java.io.FileNotFoundException;

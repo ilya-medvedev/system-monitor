@@ -1,5 +1,8 @@
 package medvedev.ilya.monitor.checker;
 
+import medvedev.ilya.monitor.util.HandlerUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -10,6 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class IpChecker {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IpChecker.class);
+
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
     private final IpService ipService;
@@ -30,14 +35,20 @@ public class IpChecker {
     }
 
     public void start() {
-        executorService.scheduleAtFixedRate(() -> {
+        executorService.scheduleAtFixedRate(HandlerUtil.exceptionHandler(() -> {
             final String newIp = ipService.currentIp();
 
-            if (!newIp.equals(ip)) {
-                notificationService.sendNotification(newIp);
-
-                ip = newIp;
+            if (ip != null) {
+                if (ip.equals(newIp)) {
+                    return;
+                } else {
+                    notificationService.sendNotification("IP address has been changed: " + newIp);
+                }
+            } else {
+                notificationService.sendNotification("Server is running: " + newIp);
             }
-        }, 0, timeout, TimeUnit.MINUTES);
+
+            ip = newIp;
+        }, LOGGER), 0, timeout, TimeUnit.MINUTES);
     }
 }
