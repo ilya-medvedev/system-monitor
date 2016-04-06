@@ -1,22 +1,22 @@
 package medvedev.ilya.monitor.sensor.cpu;
 
-import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.model.SensorLoad;
 import medvedev.ilya.monitor.model.SensorValue;
+import medvedev.ilya.monitor.sensor.Sensor;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Cpu implements Sensor {
     private final File file = new File("/proc/stat");
 
-    private final Map<String, SensorLoad> preSensorLoadMap = new HashMap<>();
+    private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
 
     public List<SensorValue> sensorValue() {
         final List<SensorLoad> sensorLoadList = sensorLoad();
