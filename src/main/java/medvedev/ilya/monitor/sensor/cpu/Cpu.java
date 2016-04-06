@@ -23,6 +23,7 @@ public class Cpu implements Sensor {
 
         synchronized (preSensorLoadMap) {
             return sensorLoadList.parallelStream()
+                    .unordered()
                     .map(sensorLoad -> {
                         final String name = sensorLoad.getName();
                         final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);

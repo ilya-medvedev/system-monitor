@@ -1,6 +1,6 @@
 package medvedev.ilya.monitor.checker;
 
-import medvedev.ilya.monitor.util.HandlerUtil;
+import medvedev.ilya.monitor.util.ExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class IpChecker {
     }
 
     public void start() {
-        executorService.scheduleAtFixedRate(HandlerUtil.exceptionHandler(() -> {
+        executorService.scheduleAtFixedRate(ExceptionHandler.runnableHandler(() -> {
             final String newIp = ipService.currentIp();
 
             if (ip != null) {

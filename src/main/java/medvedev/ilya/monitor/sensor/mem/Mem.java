@@ -20,6 +20,7 @@ public class Mem implements Sensor {
     public List<SensorValue> sensorValue() {
         return sensorLoad()
                 .parallelStream()
+                .unordered()
                 .map(sensorLoad -> {
                     final String name = sensorLoad.getName();
 
