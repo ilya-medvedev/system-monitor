@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MonitorHandler extends AbstractWebSocketHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitorHandler.class);
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final Cpu cpu = new Cpu();
     private final Mem mem = new Mem();
@@ -42,7 +42,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
 
                 final String string;
                 try {
-                    string = mapper.writeValueAsString(message);
+                    string = MAPPER.writeValueAsString(message);
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }

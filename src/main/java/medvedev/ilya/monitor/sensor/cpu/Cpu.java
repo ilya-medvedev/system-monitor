@@ -21,31 +21,33 @@ public class Cpu implements Sensor {
     public List<SensorValue> sensorValue() {
         final List<SensorLoad> sensorLoadList = sensorLoad();
 
-        return sensorLoadList.parallelStream()
-                .map(sensorLoad -> {
-                    final String name = sensorLoad.getName();
-                    final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
+        synchronized (preSensorLoadMap) {
+            return sensorLoadList.parallelStream()
+                    .map(sensorLoad -> {
+                        final String name = sensorLoad.getName();
+                        final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
 
-                    if (preSensorLoad == null)
-                        return null;
+                        if (preSensorLoad == null)
+                            return null;
 
-                    final long used = sensorLoad.getUsed();
-                    final long preUsed = preSensorLoad.getUsed();
+                        final long used = sensorLoad.getUsed();
+                        final long preUsed = preSensorLoad.getUsed();
 
-                    final double value;
-                    if (preUsed == used) {
-                        value = 0D;
-                    } else {
-                        final long total = sensorLoad.getTotal();
-                        final long preTotal = preSensorLoad.getTotal();
+                        final double value;
+                        if (preUsed == used) {
+                            value = 0D;
+                        } else {
+                            final long total = sensorLoad.getTotal();
+                            final long preTotal = preSensorLoad.getTotal();
 
-                        value = 100.0 * (used - preUsed) / (total - preTotal);
-                    }
+                            value = 100.0 * (used - preUsed) / (total - preTotal);
+                        }
 
-                    return new SensorValue(name, value);
-                })
-                .filter(cpuStat -> cpuStat != null)
-                .collect(Collectors.toList());
+                        return new SensorValue(name, value);
+                    })
+                    .filter(cpuStat -> cpuStat != null)
+                    .collect(Collectors.toList());
+        }
     }
 
     private List<SensorLoad> sensorLoad() {
@@ -160,6 +162,8 @@ public class Cpu implements Sensor {
     }
 
     public void clear() {
-        preSensorLoadMap.clear();
+        synchronized (preSensorLoadMap) {
+            preSensorLoadMap.clear();
+        }
     }
 }

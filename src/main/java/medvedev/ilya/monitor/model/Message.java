@@ -13,8 +13,9 @@ public class Message {
 
     public Message(final Sensor... sensors) {
         this.sensors = Arrays.stream(sensors)
-                .flatMap(sensor -> sensor.sensorValue()
-                        .stream())
+                .parallel()
+                .map(Sensor::sensorValue)
+                .flatMap(List::parallelStream)
                 .collect(Collectors.toList());
     }
 

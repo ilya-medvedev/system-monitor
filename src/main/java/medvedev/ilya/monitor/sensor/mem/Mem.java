@@ -18,7 +18,8 @@ public class Mem implements Sensor {
     private final File file = new File("/proc/meminfo");
 
     public List<SensorValue> sensorValue() {
-        return sensorLoad().parallelStream()
+        return sensorLoad()
+                .parallelStream()
                 .map(sensorLoad -> {
                     final String name = sensorLoad.getName();
 
