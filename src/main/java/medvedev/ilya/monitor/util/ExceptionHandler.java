@@ -7,7 +7,7 @@ public class ExceptionHandler {
         return () -> {
             try {
                 runnable.run();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 logger.warn("{}", runnable, e);
             }
         };

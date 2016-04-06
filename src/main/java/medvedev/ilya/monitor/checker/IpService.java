@@ -19,7 +19,7 @@ class IpService {
     public IpService(@Value("${ip.service.url}") final String url) {
         try {
             this.url = new URL(url);
-        } catch (MalformedURLException e) {
+        } catch (final MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -28,13 +28,13 @@ class IpService {
         final URLConnection connection;
         try {
             connection = url.openConnection();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
 
         try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             return in.readLine();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }

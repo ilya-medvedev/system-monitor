@@ -90,7 +90,7 @@ public class Mem implements Sensor {
                     stat.put(name, value);
                 }
             } while (ScannerCommon.safetyNextLine(scanner));
-        } catch (FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
             throw new RuntimeException(e);
         }
 

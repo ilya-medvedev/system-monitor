@@ -14,7 +14,6 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
-import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executors;
@@ -43,7 +42,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
                 final String string;
                 try {
                     string = MAPPER.writeValueAsString(message);
-                } catch (JsonProcessingException e) {
+                } catch (final JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
 
@@ -54,7 +53,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
                         .forEach(s -> {
                             try {
                                 s.sendMessage(socketMessage);
-                            } catch (IOException e) {
+                            } catch (final Exception e) {
                                 LOGGER.warn("{}", s, e);
                             }
                         });
