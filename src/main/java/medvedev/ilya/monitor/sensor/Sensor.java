@@ -2,8 +2,8 @@ package medvedev.ilya.monitor.sensor;
 
 import medvedev.ilya.monitor.model.SensorValue;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 public interface Sensor {
-    List<SensorValue> sensorValue();
+    Stream<SensorValue> sensorValue();
 }

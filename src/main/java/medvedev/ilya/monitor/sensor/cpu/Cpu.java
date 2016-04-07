@@ -11,21 +11,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Cpu implements Sensor {
     private final File file = new File("/proc/stat");
 
     private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
 
-    public List<SensorValue> sensorValue() {
-        final List<SensorLoad> sensorLoadList = sensorLoad();
-
-        return calculateValue(sensorLoadList);
-    }
-
-    private synchronized List<SensorValue> calculateValue(final List<SensorLoad> sensorLoadList) {
-        return sensorLoadList.parallelStream()
+    public Stream<SensorValue> sensorValue() {
+        return sensorLoad()
+                .parallelStream()
                 .unordered()
                 .map(sensorLoad -> {
                     final String name = sensorLoad.getName();
@@ -49,8 +44,7 @@ public class Cpu implements Sensor {
 
                     return new SensorValue(name, value);
                 })
-                .filter(cpuStat -> cpuStat != null)
-                .collect(Collectors.toList());
+                .filter(cpuStat -> cpuStat != null);
     }
 
     private List<SensorLoad> sensorLoad() {
@@ -164,7 +158,7 @@ public class Cpu implements Sensor {
         return sensorLoadList;
     }
 
-    public synchronized void clear() {
+    public void clear() {
         preSensorLoadMap.clear();
     }
 }

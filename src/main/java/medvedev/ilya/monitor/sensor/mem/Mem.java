@@ -1,8 +1,8 @@
 package medvedev.ilya.monitor.sensor.mem;
 
-import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.model.SensorLoad;
 import medvedev.ilya.monitor.model.SensorValue;
+import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.mem.util.ScannerCommon;
 
 import java.io.File;
@@ -12,12 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Mem implements Sensor {
     private final File file = new File("/proc/meminfo");
 
-    public List<SensorValue> sensorValue() {
+    public Stream<SensorValue> sensorValue() {
         return sensorLoad()
                 .parallelStream()
                 .unordered()
@@ -30,8 +30,7 @@ public class Mem implements Sensor {
                     final double value = 100.0 * usage / total;
 
                     return new SensorValue(name, value);
-                })
-                .collect(Collectors.toList());
+                });
     }
 
     private List<SensorLoad> sensorLoad() {
