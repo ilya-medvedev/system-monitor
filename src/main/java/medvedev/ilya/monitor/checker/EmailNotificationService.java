@@ -14,7 +14,7 @@ class EmailNotificationService {
     private final String subject;
 
     @Autowired
-    public EmailNotificationService(
+    EmailNotificationService(
             final MailSender mailSender,
             @Value("${notification.email.from}") final String from,
             @Value("${notification.email.to}") final String to,

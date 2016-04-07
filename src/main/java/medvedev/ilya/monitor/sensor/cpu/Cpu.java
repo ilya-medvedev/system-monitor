@@ -22,29 +22,35 @@ public class Cpu implements Sensor {
         return sensorLoad()
                 .parallelStream()
                 .unordered()
-                .map(sensorLoad -> {
-                    final String name = sensorLoad.getName();
-                    final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
+                .map(this::calculateResult)
+                .filter(Cpu::resultFilter);
+    }
 
-                    if (preSensorLoad == null)
-                        return null;
+    private SensorValue calculateResult(final SensorLoad sensorLoad) {
+        final String name = sensorLoad.getName();
+        final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
 
-                    final long used = sensorLoad.getUsed();
-                    final long preUsed = preSensorLoad.getUsed();
+        if (preSensorLoad == null)
+            return null;
 
-                    final double value;
-                    if (preUsed == used) {
-                        value = 0D;
-                    } else {
-                        final long total = sensorLoad.getTotal();
-                        final long preTotal = preSensorLoad.getTotal();
+        final long used = sensorLoad.getUsed();
+        final long preUsed = preSensorLoad.getUsed();
 
-                        value = 100.0 * (used - preUsed) / (total - preTotal);
-                    }
+        final double value;
+        if (preUsed == used) {
+            value = 0D;
+        } else {
+            final long total = sensorLoad.getTotal();
+            final long preTotal = preSensorLoad.getTotal();
 
-                    return new SensorValue(name, value);
-                })
-                .filter(cpuStat -> cpuStat != null);
+            value = 100.0 * (used - preUsed) / (total - preTotal);
+        }
+
+        return new SensorValue(name, value);
+    }
+
+    private static boolean resultFilter(final SensorValue sensorValue) {
+        return sensorValue != null;
     }
 
     private List<SensorLoad> sensorLoad() {

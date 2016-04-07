@@ -35,20 +35,24 @@ public class IpChecker {
     }
 
     public void start() {
-        executorService.scheduleAtFixedRate(ExceptionHandler.runnableHandler(() -> {
-            final String newIp = ipService.currentIp();
+        final Runnable runnable = ExceptionHandler.runnableHandler(this::checkIp, LOGGER);
 
-            if (ip != null) {
-                if (ip.equals(newIp)) {
-                    return;
-                } else {
-                    notificationService.sendNotification("IP address has been changed: " + newIp);
-                }
+        executorService.scheduleAtFixedRate(runnable, 0, timeout, TimeUnit.MINUTES);
+    }
+
+    private void checkIp() {
+        final String newIp = ipService.currentIp();
+
+        if (ip != null) {
+            if (ip.equals(newIp)) {
+                return;
             } else {
-                notificationService.sendNotification("Server is running: " + newIp);
+                notificationService.sendNotification("IP address has been changed: " + newIp);
             }
+        } else {
+            notificationService.sendNotification("Server is running: " + newIp);
+        }
 
-            ip = newIp;
-        }, LOGGER), 0, timeout, TimeUnit.MINUTES);
+        ip = newIp;
     }
 }

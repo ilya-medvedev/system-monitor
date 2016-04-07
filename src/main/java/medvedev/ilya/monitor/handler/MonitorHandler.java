@@ -36,31 +36,35 @@ public class MonitorHandler extends AbstractWebSocketHandler {
     @Override
     public synchronized void afterConnectionEstablished(final WebSocketSession session) {
         if (sessions.isEmpty()) {
-            scheduledFuture = executorService.scheduleAtFixedRate(ExceptionHandler.runnableHandler(() -> {
-                final Message message = new Message(cpu, mem);
+            final Runnable runnable = ExceptionHandler.runnableHandler(this::sendStats, LOGGER);
 
-                final String string;
-                try {
-                    string = MAPPER.writeValueAsString(message);
-                } catch (final JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-
-                final WebSocketMessage socketMessage = new TextMessage(string);
-
-                sessions.parallelStream()
-                        .unordered()
-                        .forEach(s -> {
-                            try {
-                                s.sendMessage(socketMessage);
-                            } catch (final Exception e) {
-                                LOGGER.warn("{}", s, e);
-                            }
-                        });
-            }, LOGGER), 0, 1, TimeUnit.SECONDS);
+            scheduledFuture = executorService.scheduleAtFixedRate(runnable, 0, 1, TimeUnit.SECONDS);
         }
 
         sessions.add(session);
+    }
+
+    private void sendStats() {
+        final Message message = new Message(cpu, mem);
+
+        final String string;
+        try {
+            string = MAPPER.writeValueAsString(message);
+        } catch (final JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        final WebSocketMessage socketMessage = new TextMessage(string);
+
+        sessions.parallelStream()
+                .unordered()
+                .forEach(s -> {
+                    try {
+                        s.sendMessage(socketMessage);
+                    } catch (final Exception e) {
+                        LOGGER.warn("{}", s, e);
+                    }
+                });
     }
 
     @Override
@@ -69,6 +73,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
 
         if (sessions.isEmpty()) {
             scheduledFuture.cancel(true);
+
             cpu.clear();
         }
     }

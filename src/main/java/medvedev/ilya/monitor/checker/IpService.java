@@ -6,17 +6,18 @@ import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 @Component
 class IpService {
     private final URL url;
 
     @Autowired
-    public IpService(@Value("${ip.service.url}") final String url) {
+    IpService(@Value("${ip.service.url}") final String url) {
         try {
             this.url = new URL(url);
         } catch (final MalformedURLException e) {
@@ -25,14 +26,12 @@ class IpService {
     }
 
     String currentIp() {
-        final URLConnection connection;
-        try {
-            connection = url.openConnection();
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+        try (
+                final InputStream inputStream = url.openConnection()
+                        .getInputStream();
+                final Reader reader = new InputStreamReader(inputStream);
+                final BufferedReader in = new BufferedReader(reader)
+        ) {
             return in.readLine();
         } catch (final IOException e) {
             throw new RuntimeException(e);

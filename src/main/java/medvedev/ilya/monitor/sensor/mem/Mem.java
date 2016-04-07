@@ -7,9 +7,7 @@ import medvedev.ilya.monitor.sensor.mem.util.ScannerCommon;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Stream;
@@ -18,22 +16,6 @@ public class Mem implements Sensor {
     private final File file = new File("/proc/meminfo");
 
     public Stream<SensorValue> sensorValue() {
-        return sensorLoad()
-                .parallelStream()
-                .unordered()
-                .map(sensorLoad -> {
-                    final String name = sensorLoad.getName();
-
-                    final long usage = sensorLoad.getUsed();
-                    final long total = sensorLoad.getTotal();
-
-                    final double value = 100.0 * usage / total;
-
-                    return new SensorValue(name, value);
-                });
-    }
-
-    private List<SensorLoad> sensorLoad() {
         final Map<String, Long> stat = new HashMap<String, Long>() {{
             /**
              * Total usable RAM (i.e., physical RAM minus a few
@@ -115,6 +97,20 @@ public class Mem implements Sensor {
         final SensorLoad mem = new SensorLoad("mem", memUsed, memTotal);
         final SensorLoad swap = new SensorLoad("swap", swapUsed, swapTotal);
 
-        return Arrays.asList(mem, swap);
+        return Stream.of(mem, swap)
+                .parallel()
+                .unordered()
+                .map(Mem::calculateResult);
+    }
+
+    private static SensorValue calculateResult(final SensorLoad sensorLoad) {
+        final String name = sensorLoad.getName();
+
+        final long usage = sensorLoad.getUsed();
+        final long total = sensorLoad.getTotal();
+
+        final double value = 100.0 * usage / total;
+
+        return new SensorValue(name, value);
     }
 }
