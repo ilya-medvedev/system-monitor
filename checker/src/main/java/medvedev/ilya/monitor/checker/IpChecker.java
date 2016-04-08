@@ -37,7 +37,7 @@ public class IpChecker {
     public void start() {
         final Runnable runnable = ExceptionHandler.runnableHandler(this::checkIp, LOGGER);
 
-        executorService.scheduleAtFixedRate(runnable, 0, timeout, TimeUnit.MINUTES);
+        executorService.scheduleWithFixedDelay(runnable, 0, timeout, TimeUnit.MINUTES);
     }
 
     private void checkIp() {

@@ -2,9 +2,9 @@ package medvedev.ilya.monitor.web.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import medvedev.ilya.monitor.sensor.model.Message;
 import medvedev.ilya.monitor.sensor.cpu.Cpu;
 import medvedev.ilya.monitor.sensor.mem.Mem;
+import medvedev.ilya.monitor.sensor.model.Message;
 import medvedev.ilya.monitor.util.ExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +16,7 @@ import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -29,15 +30,21 @@ public class MonitorHandler extends AbstractWebSocketHandler {
     private final Mem mem = new Mem();
 
     private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
-    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
+    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private final Runnable runnable;
     private ScheduledFuture scheduledFuture;
+
+    public MonitorHandler() {
+        final Executor sender = Executors.newCachedThreadPool();
+        final Runnable exceptionHandler = ExceptionHandler.runnableHandler(this::sendStats, LOGGER);
+
+        runnable = () -> sender.execute(exceptionHandler);
+    }
 
     @Override
     public synchronized void afterConnectionEstablished(final WebSocketSession session) {
         if (sessions.isEmpty()) {
-            final Runnable runnable = ExceptionHandler.runnableHandler(this::sendStats, LOGGER);
-
             scheduledFuture = executorService.scheduleAtFixedRate(runnable, 0, 1, TimeUnit.SECONDS);
         }
 
@@ -58,11 +65,11 @@ public class MonitorHandler extends AbstractWebSocketHandler {
 
         sessions.parallelStream()
                 .unordered()
-                .forEach(s -> {
+                .forEach(session -> {
                     try {
-                        s.sendMessage(socketMessage);
+                        session.sendMessage(socketMessage);
                     } catch (final Exception e) {
-                        LOGGER.warn("{}", s, e);
+                        LOGGER.warn("{}", session, e);
                     }
                 });
     }
