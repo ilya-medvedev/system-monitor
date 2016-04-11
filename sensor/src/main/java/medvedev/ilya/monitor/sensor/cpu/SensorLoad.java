@@ -1,25 +1,25 @@
-package medvedev.ilya.monitor.sensor.model;
+package medvedev.ilya.monitor.sensor.cpu;
 
-public class SensorLoad {
+class SensorLoad {
     private final String name;
     private final long used;
     private final long total;
 
-    public SensorLoad(final String name, final long used, final long total) {
+    SensorLoad(final String name, final long used, final long total) {
         this.name = name;
         this.used = used;
         this.total = total;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public long getUsed() {
+    long getUsed() {
         return used;
     }
 
-    public long getTotal() {
+    long getTotal() {
         return total;
     }
 }
