@@ -56,13 +56,13 @@ public class Mem implements Sensor {
     private static final String SWAP_FREE = "SwapFree:";
 
     private static final File FILE = new File("/proc/meminfo");
-    private final Map<Integer, Role> roleMap = new TreeMap<>();
+    private final Map<Short, Role> roleMap = new TreeMap<>();
 
     public Mem() {
-        final Map<String, Integer> stat = new HashMap<>();
+        final Map<String, Short> stat = new HashMap<>();
 
         try (final Scanner scanner = new Scanner(FILE)) {
-            int i = 0;
+            short i = 0;
 
             do {
                 final String name = scanner.next();
@@ -79,22 +79,22 @@ public class Mem implements Sensor {
             throw new RuntimeException(e);
         }
 
-        final int memTotal = stat.get(MEM_TOTAL);
-        final int swapTotal = stat.get(SWAP_TOTAL);
-        final int swapFree = stat.get(SWAP_FREE);
+        final short memTotal = stat.get(MEM_TOTAL);
+        final short swapTotal = stat.get(SWAP_TOTAL);
+        final short swapFree = stat.get(SWAP_FREE);
 
         roleMap.put(memTotal, Role.MEM_TOTAL);
         roleMap.put(swapTotal, Role.SWAP_TOTAL);
         roleMap.put(swapFree, Role.SWAP_FREE);
 
-        final Integer available = stat.get(MEM_AVAILABLE);
+        final Short available = stat.get(MEM_AVAILABLE);
         if (available != null) {
             roleMap.put(available, Role.MEM_FREE);
         } else {
-            final int free = stat.get(MEM_FREE);
-            final int buffers = stat.get(BUFFERS);
-            final int cached = stat.get(CACHED);
-            final int swapCached = stat.get(SWAP_CACHED);
+            final short free = stat.get(MEM_FREE);
+            final short buffers = stat.get(BUFFERS);
+            final short cached = stat.get(CACHED);
+            final short swapCached = stat.get(SWAP_CACHED);
 
             roleMap.put(free, Role.MEM_FREE);
             roleMap.put(buffers, Role.MEM_FREE);
@@ -104,16 +104,16 @@ public class Mem implements Sensor {
     }
 
     public Stream<SensorValue> sensorValue() {
-        long memTotal = 0;
-        long memFree = 0;
-        long swapTotal = 0;
-        long swapFree = 0;
+        int memTotal = 0;
+        int memFree = 0;
+        int swapTotal = 0;
+        int swapFree = 0;
 
         try (final Scanner scanner = new Scanner(FILE)) {
-            int lineIndex = 0;
+            short lineIndex = 0;
 
-            for (final Map.Entry<Integer, Role> integerStringEntry : roleMap.entrySet()) {
-                final int line = integerStringEntry.getKey();
+            for (final Map.Entry<Short, Role> integerStringEntry : roleMap.entrySet()) {
+                final short line = integerStringEntry.getKey();
 
                 while (lineIndex < line) {
                     scanner.nextLine();
@@ -123,7 +123,7 @@ public class Mem implements Sensor {
 
                 scanner.next();
 
-                final long value = scanner.nextLong();
+                final int value = scanner.nextInt();
                 final Role role = integerStringEntry.getValue();
 
                 switch (role) {
@@ -153,10 +153,10 @@ public class Mem implements Sensor {
                 .unordered();
     }
 
-    private static SensorValue calculateValue(final String name, final long total, final long free) {
-        final long used = total - free;
+    private static SensorValue calculateValue(final String name, final int total, final int free) {
+        final int used = total - free;
 
-        final double value = 100.0 * used / total;
+        final float value = 100.0F * used / total;
 
         return new SensorValue(name, value);
     }

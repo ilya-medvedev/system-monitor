@@ -14,17 +14,17 @@ import java.util.stream.Stream;
 
 public class Cpu implements Sensor {
     private static final File FILE = new File("/proc/stat");
-    private final int cpu;
-    private final int stats;
+    private final short cpu;
+    private final short stats;
 
     private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
 
     public Cpu() {
-        int cpu = 0;
-        int stats = 0;
+        short cpu = 0;
+        short stats = 0;
 
         try (final Scanner scanner = new Scanner(FILE)) {
-            for (int i = 0; i < 6; i++) {
+            for (byte i = 0; i < 6; i++) {
                 scanner.next();
             }
 
@@ -68,14 +68,14 @@ public class Cpu implements Sensor {
         final long used = sensorLoad.getUsed();
         final long preUsed = preSensorLoad.getUsed();
 
-        final double value;
+        final float value;
         if (preUsed == used) {
-            value = 0D;
+            value = 0F;
         } else {
             final long total = sensorLoad.getTotal();
             final long preTotal = preSensorLoad.getTotal();
 
-            value = 100.0 * (used - preUsed) / (total - preTotal);
+            value = 100.0F * (used - preUsed) / (total - preTotal);
         }
 
         return new SensorValue(name, value);
@@ -89,18 +89,18 @@ public class Cpu implements Sensor {
         final List<SensorLoad> sensorLoadList = new ArrayList<>();
 
         try (final Scanner scanner = new Scanner(FILE)) {
-            for (int cpu = -1; cpu < this.cpu; cpu++) {
+            for (short cpu = -1; cpu < this.cpu; cpu++) {
                 final String name = scanner.next();
 
                 long used = scanner.nextLong();
 
-                for (int stats = 0; stats < 2; stats++) {
+                for (short stats = 0; stats < 2; stats++) {
                     used += scanner.nextLong();
                 }
 
                 final long idle = scanner.nextLong();
 
-                for (int stats = 0; stats < this.stats; stats++) {
+                for (short stats = 0; stats < this.stats; stats++) {
                     used += scanner.nextLong();
                 }
 
