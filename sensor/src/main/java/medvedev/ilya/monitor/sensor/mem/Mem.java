@@ -56,9 +56,10 @@ public class Mem implements Sensor {
     private static final String SWAP_FREE = "SwapFree:";
 
     private static final File FILE = new File("/proc/meminfo");
-    private final Map<Short, Role> roleMap = new TreeMap<>();
 
-    public Mem() {
+    public static Mem byFile() {
+        final Map<Short, Role> roleMap = new TreeMap<>();
+
         final Map<String, Short> stat = new HashMap<>();
 
         try (final Scanner scanner = new Scanner(FILE)) {
@@ -101,6 +102,14 @@ public class Mem implements Sensor {
             roleMap.put(cached, Role.MEM_FREE);
             roleMap.put(swapCached, Role.MEM_FREE);
         }
+
+        return new Mem(roleMap);
+    }
+
+    private final Map<Short, Role> roleMap;
+
+    private Mem(final Map<Short, Role> roleMap) {
+        this.roleMap = roleMap;
     }
 
     public Stream<SensorValue> sensorValue() {

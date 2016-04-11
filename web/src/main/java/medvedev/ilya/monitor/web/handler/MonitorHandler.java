@@ -26,8 +26,8 @@ public class MonitorHandler extends AbstractWebSocketHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitorHandler.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final Cpu cpu = new Cpu();
-    private final Mem mem = new Mem();
+    private final Cpu cpu = Cpu.byFile();
+    private final Mem mem = Mem.byFile();
 
     private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
 
@@ -52,7 +52,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
     }
 
     private void sendStats() {
-        final Message message = new Message(cpu, mem);
+        final Message message = Message.bySensors(cpu, mem);
 
         final String string;
         try {

@@ -14,12 +14,8 @@ import java.util.stream.Stream;
 
 public class Cpu implements Sensor {
     private static final File FILE = new File("/proc/stat");
-    private final short cpu;
-    private final short stats;
 
-    private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
-
-    public Cpu() {
+    public static Cpu byFile() {
         short cpu = 0;
         short stats = 0;
 
@@ -46,6 +42,15 @@ public class Cpu implements Sensor {
             throw new RuntimeException(e);
         }
 
+        return new Cpu(cpu, stats);
+    }
+
+    private final short cpu;
+    private final short stats;
+
+    private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
+
+    private Cpu(final short cpu, final short stats) {
         this.cpu = cpu;
         this.stats = stats;
     }
