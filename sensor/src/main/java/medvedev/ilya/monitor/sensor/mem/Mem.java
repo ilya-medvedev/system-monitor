@@ -55,10 +55,17 @@ public class Mem implements Sensor {
     /* Amount of swap space that is currently unused. */
     private static final String SWAP_FREE = "SwapFree:";
 
+    private static final String WRONG_FILE = "File is wrong";
+
+    private static final String MEM_SENSOR = "mem";
+    private static final String SWAP_SENSOR = "swap";
+
     private static final File FILE = new File("/proc/meminfo");
 
     public static Mem byFile() {
-        final Map<Short, Role> roleMap = new TreeMap<>();
+        Integer memTotal = null;
+        Integer swapTotal = null;
+        final Map<Short, Boolean> roleMap = new TreeMap<>();
 
         final Map<String, Short> stat = new HashMap<>();
 
@@ -68,7 +75,17 @@ public class Mem implements Sensor {
             do {
                 final String name = scanner.next();
 
-                stat.put(name, i);
+                switch (name) {
+                    case MEM_TOTAL:
+                        memTotal = scanner.nextInt();
+                        break;
+                    case SWAP_TOTAL:
+                        swapTotal = scanner.nextInt();
+                        break;
+                    default:
+                        stat.put(name, i);
+                        break;
+                }
 
                 if (scanner.hasNextLine()) {
                     scanner.nextLine();
@@ -80,49 +97,59 @@ public class Mem implements Sensor {
             throw new RuntimeException(e);
         }
 
-        final short memTotal = stat.get(MEM_TOTAL);
-        final short swapTotal = stat.get(SWAP_TOTAL);
-        final short swapFree = stat.get(SWAP_FREE);
+        if (memTotal == null || swapTotal == null) {
+            throw new RuntimeException(WRONG_FILE);
+        }
 
-        roleMap.put(memTotal, Role.MEM_TOTAL);
-        roleMap.put(swapTotal, Role.SWAP_TOTAL);
-        roleMap.put(swapFree, Role.SWAP_FREE);
+        final Short swapFree = stat.get(SWAP_FREE);
+
+        if (swapFree == null) {
+            throw new RuntimeException(WRONG_FILE);
+        }
+
+        roleMap.put(swapFree, false);
 
         final Short available = stat.get(MEM_AVAILABLE);
         if (available != null) {
-            roleMap.put(available, Role.MEM_FREE);
+            roleMap.put(available, true);
         } else {
-            final short free = stat.get(MEM_FREE);
-            final short buffers = stat.get(BUFFERS);
-            final short cached = stat.get(CACHED);
-            final short swapCached = stat.get(SWAP_CACHED);
+            final Short free = stat.get(MEM_FREE);
+            final Short buffers = stat.get(BUFFERS);
+            final Short cached = stat.get(CACHED);
+            final Short swapCached = stat.get(SWAP_CACHED);
 
-            roleMap.put(free, Role.MEM_FREE);
-            roleMap.put(buffers, Role.MEM_FREE);
-            roleMap.put(cached, Role.MEM_FREE);
-            roleMap.put(swapCached, Role.MEM_FREE);
+            if (free == null || buffers == null || cached == null || swapCached == null) {
+                throw new RuntimeException(WRONG_FILE);
+            }
+
+            roleMap.put(free, true);
+            roleMap.put(buffers, true);
+            roleMap.put(cached, true);
+            roleMap.put(swapCached, true);
         }
 
-        return new Mem(roleMap);
+        return new Mem(memTotal, swapTotal, roleMap);
     }
 
-    private final Map<Short, Role> roleMap;
+    private final int memTotal;
+    private final int swapTotal;
+    private final Map<Short, Boolean> memLineMap;
 
-    private Mem(final Map<Short, Role> roleMap) {
-        this.roleMap = roleMap;
+    private Mem(final int memTotal, final int swapTotal, final Map<Short, Boolean> memLineMap) {
+        this.memTotal = memTotal;
+        this.swapTotal = swapTotal;
+        this.memLineMap = memLineMap;
     }
 
     public Stream<SensorValue> sensorValue() {
-        int memTotal = 0;
         int memFree = 0;
-        int swapTotal = 0;
         int swapFree = 0;
 
         try (final Scanner scanner = new Scanner(FILE)) {
             short lineIndex = 0;
 
-            for (final Map.Entry<Short, Role> integerStringEntry : roleMap.entrySet()) {
-                final short line = integerStringEntry.getKey();
+            for (final Map.Entry<Short, Boolean> memLine : memLineMap.entrySet()) {
+                final short line = memLine.getKey();
 
                 while (lineIndex < line) {
                     scanner.nextLine();
@@ -133,33 +160,32 @@ public class Mem implements Sensor {
                 scanner.next();
 
                 final int value = scanner.nextInt();
-                final Role role = integerStringEntry.getValue();
+                final boolean mem = memLine.getValue();
 
-                switch (role) {
-                    case MEM_TOTAL:
-                        memTotal += value;
-                        break;
-                    case MEM_FREE:
-                        memFree += value;
-                        break;
-                    case SWAP_TOTAL:
-                        swapTotal += value;
-                        break;
-                    case SWAP_FREE:
-                        swapFree += value;
-                        break;
+                if (mem) {
+                    memFree += value;
+                } else {
+                    swapFree += value;
                 }
             }
         } catch (final FileNotFoundException e) {
             throw new RuntimeException(e);
         }
 
-        final SensorValue mem = calculateValue("mem", memTotal, memFree);
-        final SensorValue swap = calculateValue("swap", swapTotal, swapFree);
+        final SensorValue mem = calculateMemValue(memFree);
+        final SensorValue swap = calculateSwapValue(swapFree);
 
         return Stream.of(mem, swap)
                 .parallel()
                 .unordered();
+    }
+
+    private SensorValue calculateMemValue(final int free) {
+        return calculateValue(MEM_SENSOR, memTotal, free);
+    }
+
+    private SensorValue calculateSwapValue(final int free) {
+        return calculateValue(SWAP_SENSOR, swapTotal, free);
     }
 
     private static SensorValue calculateValue(final String name, final int total, final int free) {
