@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 @Component
@@ -17,12 +16,8 @@ class IpService {
     private final URL url;
 
     @Autowired
-    IpService(@Value("${ip.service.url}") final String url) {
-        try {
-            this.url = new URL(url);
-        } catch (final MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+    IpService(@Value("${ip.service.url}") final URL url) {
+        this.url = url;
     }
 
     String currentIp() {

@@ -1,6 +1,5 @@
 package medvedev.ilya.monitor.sensor.cpu;
 
-import medvedev.ilya.monitor.sensor.model.SensorLoad;
 import medvedev.ilya.monitor.sensor.model.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
 
@@ -14,9 +13,47 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class Cpu implements Sensor {
-    private final File file = new File("/proc/stat");
+    private static final File FILE = new File("/proc/stat");
+
+    public static Cpu byFile() {
+        short cpu = 0;
+        short stats = 0;
+
+        try (final Scanner scanner = new Scanner(FILE)) {
+            for (byte i = 0; i < 6; i++) {
+                scanner.next();
+            }
+
+            while (stats < 6 && scanner.hasNextLong()) {
+                scanner.next();
+
+                stats++;
+            }
+
+            scanner.nextLine();
+            String name = scanner.next();
+            while (name.startsWith("cpu")) {
+                cpu++;
+
+                scanner.nextLine();
+                name = scanner.next();
+            }
+        } catch (final FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new Cpu(cpu, stats);
+    }
+
+    private final short cpu;
+    private final short stats;
 
     private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
+
+    private Cpu(final short cpu, final short stats) {
+        this.cpu = cpu;
+        this.stats = stats;
+    }
 
     public Stream<SensorValue> sensorValue() {
         return sensorLoad()
@@ -36,14 +73,14 @@ public class Cpu implements Sensor {
         final long used = sensorLoad.getUsed();
         final long preUsed = preSensorLoad.getUsed();
 
-        final double value;
+        final float value;
         if (preUsed == used) {
-            value = 0D;
+            value = 0F;
         } else {
             final long total = sensorLoad.getTotal();
             final long preTotal = preSensorLoad.getTotal();
 
-            value = 100.0 * (used - preUsed) / (total - preTotal);
+            value = 100.0F * (used - preUsed) / (total - preTotal);
         }
 
         return new SensorValue(name, value);
@@ -56,106 +93,28 @@ public class Cpu implements Sensor {
     private List<SensorLoad> sensorLoad() {
         final List<SensorLoad> sensorLoadList = new ArrayList<>();
 
-        try (final Scanner scanner = new Scanner(file)) {
-            for (String name = scanner.next(); name.startsWith("cpu"); name = scanner.next()) {
-                /** (1) Time spent in user mode. */
-                final long user = scanner.nextLong();
+        try (final Scanner scanner = new Scanner(FILE)) {
+            for (short cpu = -1; cpu < this.cpu; cpu++) {
+                final String name = scanner.next();
 
-                /**
-                 * (2) Time spent in user mode with low priority
-                 * (nice).
-                 */
-                final long nice = scanner.nextLong();
+                long used = scanner.nextLong();
 
-                /** (3) Time spent in system mode. */
-                final long system = scanner.nextLong();
+                for (short stats = 0; stats < 2; stats++) {
+                    used += scanner.nextLong();
+                }
 
-                /**
-                 * (4) Time spent in the idle task.  This value
-                 * hould be USER_HZ times the second entry in the
-                 * /proc/uptime pseudo-file.
-                 */
                 final long idle = scanner.nextLong();
 
-                /**
-                 * (since Linux 2.5.41)
-                 * (5) Time waiting for I/O to complete.
-                 */
-                final long iowait;
-                if (scanner.hasNextLong()) {
-                    iowait = scanner.nextLong();
-                } else {
-                    iowait = 0;
+                for (short stats = 0; stats < this.stats; stats++) {
+                    used += scanner.nextLong();
                 }
 
-                /**
-                 * (since Linux 2.6.0-test4)
-                 * (6) Time servicing interrupts.
-                 */
-                final long irq;
-                if (scanner.hasNextLong()) {
-                    irq = scanner.nextLong();
-                } else {
-                    irq = 0;
-                }
-
-                /**
-                 * (since Linux 2.6.0-test4)
-                 * (7) Time servicing softirqs.
-                 */
-                final long softirq;
-                if (scanner.hasNextLong()) {
-                    softirq = scanner.nextLong();
-                } else {
-                    softirq = 0;
-                }
-
-                /**
-                 * (since Linux 2.6.11)
-                 * (8) Stolen time, which is the time spent in
-                 * other operating systems when running in a
-                 * virtualized environment
-                 */
-                final long steal;
-                if (scanner.hasNextLong()) {
-                    steal = scanner.nextLong();
-                } else {
-                    steal = 0;
-                }
-
-                /**
-                 * (since Linux 2.6.24)
-                 * (9) Time spent running a virtual CPU for guest
-                 * operating systems under the control of the Linux
-                 * kernel.
-                 */
-                final long guest;
-                if (scanner.hasNextLong()) {
-                    guest = scanner.nextLong();
-                } else {
-                    guest = 0;
-                }
-
-                /**
-                 * (since Linux 2.6.33)
-                 * (10) Time spent running a niced guest (virtual
-                 * CPU for guest operating systems under the
-                 * control of the Linux kernel).
-                 */
-                final long guestNice;
-                if (scanner.hasNextLong()) {
-                    guestNice = scanner.nextLong();
-                } else {
-                    guestNice = 0;
-                }
-
-                scanner.nextLine();
-
-                final long used = user + nice + system + iowait + irq + softirq + steal + guest + guestNice;
                 final long total = used + idle;
                 final SensorLoad sensorLoad = new SensorLoad(name, used, total);
 
                 sensorLoadList.add(sensorLoad);
+
+                scanner.nextLine();
             }
         } catch (final FileNotFoundException e) {
             throw new RuntimeException(e);
