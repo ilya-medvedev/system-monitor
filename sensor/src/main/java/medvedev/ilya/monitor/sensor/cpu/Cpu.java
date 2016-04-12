@@ -123,6 +123,7 @@ public class Cpu implements Sensor {
         return sensorLoadList;
     }
 
+    @Override
     public void clear() {
         preSensorLoadMap.clear();
     }

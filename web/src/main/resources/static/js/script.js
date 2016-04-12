@@ -96,44 +96,43 @@ var cpuChart = $('#cpu').highcharts();
 var memChart = $('#mem').highcharts();
 
 $(function() {
+    setInterval(function () {
+        cpuChart.redraw();
+        memChart.redraw();
+    }, 1000);
+
     socket.onmessage = function(message) {
+        var time = new Date()
+                .getTime();
+
         var json = message.data;
         var data = $.parseJSON(json);
 
-//        data.sensors.sort(function(a, b) {
-//            return a.name.localeCompare(b.name);
-//        });
+        var name = data.name;
 
-        $.each(data.sensors, function(index, element) {
-            var name = element.name;
+        var chart;
+        if (name.startsWith('cpu')) {
+            chart = cpuChart;
+        } else if (name == 'mem' || name == 'swap') {
+            chart = memChart;
+        } else {
+            return;
+        }
 
-            var chart;
-            if (name.startsWith('cpu')) {
-                chart = cpuChart;
-            } else if (name == 'mem' || name == 'swap') {
-                chart = memChart;
-            } else {
-                return;
-            }
+        var series = chart.get(name);
+        var point = [time, data.value];
 
-            var series = chart.get(name);
-            var point = [data.time, element.value];
+        if (series == null) {
+            chart.addSeries({
+                id: name,
+                name: name,
+                data: [point],
+                visible: false
+            }, false);
+        } else {
+            var shift = series.xData.length > 60;
 
-            if (series == null) {
-                chart.addSeries({
-                    id: name,
-                    name: name,
-                    data: [point],
-                    visible: false
-                }, false);
-            } else {
-                var shift = series.xData.length > 60;
-
-                series.addPoint(point, false, shift);
-            }
-        });
-
-        cpuChart.redraw();
-        memChart.redraw();
+            series.addPoint(point, false, shift);
+        }
     };
 });
