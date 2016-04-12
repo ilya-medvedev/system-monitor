@@ -1,7 +1,7 @@
 package medvedev.ilya.monitor.sensor.mem;
 
+import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
-import medvedev.ilya.monitor.sensor.model.SensorValue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -193,6 +193,9 @@ public class Mem implements Sensor {
 
         final float value = 100.0F * used / total;
 
-        return new SensorValue(name, value);
+        return SensorValue.newBuilder()
+                .setName(name)
+                .setValue(value)
+                .build();
     }
 }

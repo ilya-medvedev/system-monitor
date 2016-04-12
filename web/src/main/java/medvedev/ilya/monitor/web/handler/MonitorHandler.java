@@ -1,7 +1,6 @@
 package medvedev.ilya.monitor.web.handler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.cpu.Cpu;
 import medvedev.ilya.monitor.sensor.mem.Mem;
@@ -9,8 +8,8 @@ import medvedev.ilya.monitor.util.ExceptionHandler;
 import medvedev.ilya.monitor.web.session.ParallelSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
@@ -25,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 public class MonitorHandler extends AbstractWebSocketHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitorHandler.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final Sensor[] sensors;
 
@@ -63,14 +61,8 @@ public class MonitorHandler extends AbstractWebSocketHandler {
                 .parallel()
                 .unordered()
                 .flatMap(Sensor::sensorValue)
-                .map(sensorValue -> {
-                    try {
-                        return MAPPER.writeValueAsString(sensorValue);
-                    } catch (final JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .map(TextMessage::new)
+                .map(SensorValue::toByteArray)
+                .map(BinaryMessage::new)
                 .forEach(message -> sessions.values()
                         .parallelStream()
                         .unordered()
