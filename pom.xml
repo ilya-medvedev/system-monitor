@@ -21,6 +21,7 @@
         <module>sensor</module>
         <module>web</module>
         <module>system-monitor</module>
+        <module>proto</module>
     </modules>
 
     <properties>

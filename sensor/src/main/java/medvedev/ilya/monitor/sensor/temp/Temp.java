@@ -1,6 +1,6 @@
 package medvedev.ilya.monitor.sensor.temp;
 
-import medvedev.ilya.monitor.sensor.model.SensorValue;
+import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
 
 import java.io.File;

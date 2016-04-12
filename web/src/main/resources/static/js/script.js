@@ -1,4 +1,5 @@
 var socket = new WebSocket('ws://' + location.host + '/ws');
+socket.binaryType = 'arraybuffer';
 
 Highcharts.setOptions({
     global: {
@@ -95,6 +96,10 @@ $('#mem').highcharts({
 var cpuChart = $('#cpu').highcharts();
 var memChart = $('#mem').highcharts();
 
+var SensorValue = dcodeIO.ProtoBuf
+        .loadProtoFile("proto/protobuf.proto")
+        .build("medvedev.ilya.monitor.proto.SensorValue");
+
 $(function() {
     setInterval(function () {
         cpuChart.redraw();
@@ -105,10 +110,10 @@ $(function() {
         var time = new Date()
                 .getTime();
 
-        var json = message.data;
-        var data = $.parseJSON(json);
+        var data = message.data;
+        var sensorValue = SensorValue.decode(data);
 
-        var name = data.name;
+        var name = sensorValue.name;
 
         var chart;
         if (name.startsWith('cpu')) {
@@ -120,7 +125,7 @@ $(function() {
         }
 
         var series = chart.get(name);
-        var point = [time, data.value];
+        var point = [time, sensorValue.value];
 
         if (series == null) {
             chart.addSeries({

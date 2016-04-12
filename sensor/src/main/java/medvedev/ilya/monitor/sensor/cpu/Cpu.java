@@ -1,6 +1,6 @@
 package medvedev.ilya.monitor.sensor.cpu;
 
-import medvedev.ilya.monitor.sensor.model.SensorValue;
+import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
 
 import java.io.File;
@@ -83,7 +83,10 @@ public class Cpu implements Sensor {
             value = 100.0F * (used - preUsed) / (total - preTotal);
         }
 
-        return new SensorValue(name, value);
+        return SensorValue.newBuilder()
+                .setName(name)
+                .setValue(value)
+                .build();
     }
 
     private static boolean resultFilter(final SensorValue sensorValue) {
