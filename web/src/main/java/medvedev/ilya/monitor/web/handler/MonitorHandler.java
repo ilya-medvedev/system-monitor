@@ -2,20 +2,21 @@ package medvedev.ilya.monitor.web.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.cpu.Cpu;
 import medvedev.ilya.monitor.sensor.mem.Mem;
-import medvedev.ilya.monitor.sensor.model.Message;
 import medvedev.ilya.monitor.util.ExceptionHandler;
+import medvedev.ilya.monitor.web.session.ParallelSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,20 +27,24 @@ public class MonitorHandler extends AbstractWebSocketHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitorHandler.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final Cpu cpu = Cpu.byFile();
-    private final Mem mem = Mem.byFile();
+    private final Sensor[] sensors;
 
-    private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
+    private final Map<WebSocketSession, ParallelSession> sessions = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final Runnable runnable;
     private ScheduledFuture scheduledFuture;
 
     public MonitorHandler() {
-        final Executor sender = Executors.newCachedThreadPool();
-        final Runnable exceptionHandler = ExceptionHandler.runnableHandler(this::sendStats, LOGGER);
+        final Cpu cpu = Cpu.byFile();
+        final Mem mem = Mem.byFile();
 
-        runnable = () -> sender.execute(exceptionHandler);
+        sensors = new Sensor[] {cpu, mem};
+
+        final Executor sender = Executors.newCachedThreadPool();
+        final Runnable sendStats = () -> sender.execute(this::sendStats);
+
+        runnable = ExceptionHandler.runnableHandler(sendStats, LOGGER);
     }
 
     @Override
@@ -48,30 +53,34 @@ public class MonitorHandler extends AbstractWebSocketHandler {
             scheduledFuture = executorService.scheduleAtFixedRate(runnable, 0, 1, TimeUnit.SECONDS);
         }
 
-        sessions.add(session);
+        final ParallelSession parallelSession = new ParallelSession(session);
+
+        sessions.put(session, parallelSession);
     }
 
     private void sendStats() {
-        final Message message = Message.bySensors(cpu, mem);
-
-        final String string;
-        try {
-            string = MAPPER.writeValueAsString(message);
-        } catch (final JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        final WebSocketMessage socketMessage = new TextMessage(string);
-
-        sessions.parallelStream()
+        Arrays.stream(sensors)
+                .parallel()
                 .unordered()
-                .forEach(session -> {
+                .flatMap(Sensor::sensorValue)
+                .map(sensorValue -> {
                     try {
-                        session.sendMessage(socketMessage);
-                    } catch (final Exception e) {
-                        LOGGER.warn("{}", session, e);
+                        return MAPPER.writeValueAsString(sensorValue);
+                    } catch (final JsonProcessingException e) {
+                        throw new RuntimeException(e);
                     }
-                });
+                })
+                .map(TextMessage::new)
+                .forEach(message -> sessions.values()
+                        .parallelStream()
+                        .unordered()
+                        .forEach(session -> {
+                            try {
+                                session.send(message);
+                            } catch (final Exception e) {
+                                LOGGER.warn("{}", session, e);
+                            }
+                        }));
     }
 
     @Override
@@ -81,7 +90,10 @@ public class MonitorHandler extends AbstractWebSocketHandler {
         if (sessions.isEmpty()) {
             scheduledFuture.cancel(true);
 
-            cpu.clear();
+            Arrays.stream(sensors)
+                    .parallel()
+                    .unordered()
+                    .forEach(Sensor::clear);
         }
     }
 }
