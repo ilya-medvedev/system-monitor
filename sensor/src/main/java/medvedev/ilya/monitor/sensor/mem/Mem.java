@@ -1,6 +1,7 @@
 package medvedev.ilya.monitor.sensor.mem;
 
 import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
+import medvedev.ilya.monitor.proto.Protobuf.SensorValue.Builder;
 import medvedev.ilya.monitor.sensor.Sensor;
 
 import java.io.File;
@@ -141,7 +142,8 @@ public class Mem implements Sensor {
         this.memLineMap = memLineMap;
     }
 
-    public Stream<SensorValue> sensorValue() {
+    @Override
+    public Stream<Builder> sensorValue() {
         int memFree = 0;
         int swapFree = 0;
 
@@ -172,30 +174,29 @@ public class Mem implements Sensor {
             throw new RuntimeException(e);
         }
 
-        final SensorValue mem = calculateMemValue(memFree);
-        final SensorValue swap = calculateSwapValue(swapFree);
+        final Builder mem = calculateMemValue(memFree);
+        final Builder swap = calculateSwapValue(swapFree);
 
         return Stream.of(mem, swap)
                 .parallel()
                 .unordered();
     }
 
-    private SensorValue calculateMemValue(final int free) {
+    private Builder calculateMemValue(final int free) {
         return calculateValue(MEM_SENSOR, memTotal, free);
     }
 
-    private SensorValue calculateSwapValue(final int free) {
+    private Builder calculateSwapValue(final int free) {
         return calculateValue(SWAP_SENSOR, swapTotal, free);
     }
 
-    private static SensorValue calculateValue(final String name, final int total, final int free) {
+    private static Builder calculateValue(final String name, final int total, final int free) {
         final int used = total - free;
 
         final float value = 100.0F * used / total;
 
         return SensorValue.newBuilder()
                 .setName(name)
-                .setValue(value)
-                .build();
+                .setValue(value);
     }
 }
