@@ -107,13 +107,10 @@ $(function() {
     }, 1000);
 
     socket.onmessage = function(message) {
-        var time = new Date()
-                .getTime();
-
         var data = message.data;
         var sensorValue = SensorValue.decode(data);
 
-        var name = sensorValue.name;
+        var name = sensorValue.getName();
 
         var chart;
         if (name.startsWith('cpu')) {
@@ -125,7 +122,10 @@ $(function() {
         }
 
         var series = chart.get(name);
-        var point = [time, sensorValue.value];
+        var time = sensorValue.getTime()
+                .toNumber();
+        var value = sensorValue.getValue();
+        var point = [time, value];
 
         if (series == null) {
             chart.addSeries({

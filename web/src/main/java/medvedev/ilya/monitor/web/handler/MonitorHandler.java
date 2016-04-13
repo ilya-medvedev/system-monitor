@@ -1,6 +1,7 @@
 package medvedev.ilya.monitor.web.handler;
 
 import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
+import medvedev.ilya.monitor.proto.Protobuf.SensorValue.Builder;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.cpu.Cpu;
 import medvedev.ilya.monitor.sensor.mem.Mem;
@@ -57,10 +58,14 @@ public class MonitorHandler extends AbstractWebSocketHandler {
     }
 
     private void sendStats() {
+        final long time = System.currentTimeMillis();
+
         Arrays.stream(sensors)
                 .parallel()
                 .unordered()
                 .flatMap(Sensor::sensorValue)
+                .map(builder -> builder.setTime(time))
+                .map(Builder::build)
                 .map(SensorValue::toByteArray)
                 .map(BinaryMessage::new)
                 .forEach(message -> sessions.values()

@@ -1,6 +1,7 @@
 package medvedev.ilya.monitor.sensor.cpu;
 
 import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
+import medvedev.ilya.monitor.proto.Protobuf.SensorValue.Builder;
 import medvedev.ilya.monitor.sensor.Sensor;
 
 import java.io.File;
@@ -55,7 +56,8 @@ public class Cpu implements Sensor {
         this.stats = stats;
     }
 
-    public Stream<SensorValue> sensorValue() {
+    @Override
+    public Stream<Builder> sensorValue() {
         return sensorLoad()
                 .parallelStream()
                 .unordered()
@@ -63,7 +65,7 @@ public class Cpu implements Sensor {
                 .filter(Cpu::resultFilter);
     }
 
-    private SensorValue calculateResult(final SensorLoad sensorLoad) {
+    private Builder calculateResult(final SensorLoad sensorLoad) {
         final String name = sensorLoad.getName();
         final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
 
@@ -85,11 +87,10 @@ public class Cpu implements Sensor {
 
         return SensorValue.newBuilder()
                 .setName(name)
-                .setValue(value)
-                .build();
+                .setValue(value);
     }
 
-    private static boolean resultFilter(final SensorValue sensorValue) {
+    private static boolean resultFilter(final Builder sensorValue) {
         return sensorValue != null;
     }
 
