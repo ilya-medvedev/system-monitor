@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -27,7 +26,7 @@ public class AsyncSession {
     private void exceptionHandler(final WebSocketMessage<?> message) {
         try {
             session.sendMessage(message);
-        } catch (IOException e) {
+        } catch (final Exception e) {
             LOGGER.warn("{}", message, e);
         }
     }
