@@ -9,7 +9,6 @@ import medvedev.ilya.monitor.util.ExceptionHandler;
 import medvedev.ilya.monitor.web.session.AsyncSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
@@ -63,11 +62,10 @@ public class MonitorHandler extends AbstractWebSocketHandler {
                 .map(builder -> builder.setTime(time))
                 .map(Builder::build)
                 .map(SensorValue::toByteArray)
-                .map(BinaryMessage::new)
-                .forEach(message -> sessions.values()
+                .forEach(bytes -> sessions.values()
                         .parallelStream()
                         .unordered()
-                        .forEach(session -> session.send(message)));
+                        .forEach(session -> session.send(bytes)));
     }
 
     @Override
