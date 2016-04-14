@@ -6,7 +6,7 @@ import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.cpu.Cpu;
 import medvedev.ilya.monitor.sensor.mem.Mem;
 import medvedev.ilya.monitor.util.ExceptionHandler;
-import medvedev.ilya.monitor.web.session.ParallelSession;
+import medvedev.ilya.monitor.web.session.AsyncSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.BinaryMessage;
@@ -17,7 +17,6 @@ import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -28,7 +27,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
 
     private final Sensor[] sensors;
 
-    private final Map<WebSocketSession, ParallelSession> sessions = new ConcurrentHashMap<>();
+    private final Map<WebSocketSession, AsyncSession> sessions = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final Runnable runnable;
@@ -40,10 +39,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
 
         sensors = new Sensor[] {cpu, mem};
 
-        final Executor sender = Executors.newCachedThreadPool();
-        final Runnable sendStats = () -> sender.execute(this::sendStats);
-
-        runnable = ExceptionHandler.runnableHandler(sendStats, LOGGER);
+        runnable = ExceptionHandler.runnableHandler(this::sendStats, LOGGER);
     }
 
     @Override
@@ -52,9 +48,9 @@ public class MonitorHandler extends AbstractWebSocketHandler {
             scheduledFuture = executorService.scheduleAtFixedRate(runnable, 0, 1, TimeUnit.SECONDS);
         }
 
-        final ParallelSession parallelSession = new ParallelSession(session);
+        final AsyncSession asyncSession = new AsyncSession(session);
 
-        sessions.put(session, parallelSession);
+        sessions.put(session, asyncSession);
     }
 
     private void sendStats() {
@@ -71,13 +67,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
                 .forEach(message -> sessions.values()
                         .parallelStream()
                         .unordered()
-                        .forEach(session -> {
-                            try {
-                                session.send(message);
-                            } catch (final Exception e) {
-                                LOGGER.warn("{}", session, e);
-                            }
-                        }));
+                        .forEach(session -> session.send(message)));
     }
 
     @Override
