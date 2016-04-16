@@ -71,6 +71,7 @@ public class MonitorHandler extends AbstractWebSocketHandler {
 
         sessions.values()
                 .parallelStream()
+                .unordered()
                 .forEach(session -> {
                     final WebSocketMessage message = new BinaryMessage(bytes);
 

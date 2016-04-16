@@ -173,22 +173,14 @@ public class Mem implements Sensor {
             throw new RuntimeException(e);
         }
 
-        final SensorValue mem = calculateMemValue(memFree);
-        final SensorValue swap = calculateSwapValue(swapFree);
+        final SensorValue mem = calculateValue(MEM_SENSOR, memTotal, memFree);
+        final SensorValue swap = calculateValue(SWAP_SENSOR, swapTotal, swapFree);
 
         return SensorInfo.newBuilder()
                 .setName("mem")
                 .addValue(mem)
                 .addValue(swap)
                 .build();
-    }
-
-    private SensorValue calculateMemValue(final int free) {
-        return calculateValue(MEM_SENSOR, memTotal, free);
-    }
-
-    private SensorValue calculateSwapValue(final int free) {
-        return calculateValue(SWAP_SENSOR, swapTotal, free);
     }
 
     private static SensorValue calculateValue(final String name, final int total, final int free) {
