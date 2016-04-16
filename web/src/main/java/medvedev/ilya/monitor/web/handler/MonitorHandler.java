@@ -1,7 +1,6 @@
 package medvedev.ilya.monitor.web.handler;
 
-import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
-import medvedev.ilya.monitor.proto.Protobuf.SensorValue.Builder;
+import medvedev.ilya.monitor.proto.Protobuf.Message;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.cpu.Cpu;
 import medvedev.ilya.monitor.sensor.mem.Mem;
@@ -9,7 +8,9 @@ import medvedev.ilya.monitor.util.ExceptionHandler;
 import medvedev.ilya.monitor.web.session.AsyncSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
@@ -55,17 +56,27 @@ public class MonitorHandler extends AbstractWebSocketHandler {
     private void sendStats() {
         final long time = System.currentTimeMillis();
 
+        final Message.Builder builder = Message.newBuilder()
+                .setTime(time);
+
         Arrays.stream(sensors)
                 .parallel()
                 .unordered()
-                .flatMap(Sensor::sensorValue)
-                .map(builder -> builder.setTime(time))
-                .map(Builder::build)
-                .map(SensorValue::toByteArray)
-                .forEach(bytes -> sessions.values()
-                        .parallelStream()
-                        .unordered()
-                        .forEach(session -> session.send(bytes)));
+                .map(Sensor::sensorInfo)
+                .forEach(builder::addValue);
+
+        final byte[] bytes = builder
+                .build()
+                .toByteArray();
+
+        sessions.values()
+                .parallelStream()
+                .unordered()
+                .forEach(session -> {
+                    final WebSocketMessage message = new BinaryMessage(bytes);
+
+                    session.send(message);
+                });
     }
 
     @Override

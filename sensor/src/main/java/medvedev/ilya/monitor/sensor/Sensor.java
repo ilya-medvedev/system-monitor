@@ -1,11 +1,9 @@
 package medvedev.ilya.monitor.sensor;
 
-import medvedev.ilya.monitor.proto.Protobuf.SensorValue.Builder;
-
-import java.util.stream.Stream;
+import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
 
 public interface Sensor {
-    Stream<Builder> sensorValue();
+    SensorInfo sensorInfo();
 
     default void clear() {}
 }

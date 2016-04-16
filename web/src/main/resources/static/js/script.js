@@ -93,51 +93,52 @@ $('#mem').highcharts({
     ]
 });
 
-var cpuChart = $('#cpu').highcharts();
-var memChart = $('#mem').highcharts();
+var charts = {
+    cpu: $('#cpu').highcharts(),
+    mem: $('#mem').highcharts()
+};
 
-var SensorValue = dcodeIO.ProtoBuf
+var Message = dcodeIO.ProtoBuf
         .loadProtoFile("proto/protobuf.proto")
-        .build("medvedev.ilya.monitor.proto.SensorValue");
+        .build("medvedev.ilya.monitor.proto.Message");
 
 $(function() {
-    setInterval(function () {
-        cpuChart.redraw();
-        memChart.redraw();
-    }, 1000);
-
     socket.onmessage = function(message) {
         var data = message.data;
-        var sensorValue = SensorValue.decode(data);
+        var sensorMessage = Message.decode(data);
 
-        var name = sensorValue.getName();
+        var value = sensorMessage.getValue();
 
-        var chart;
-        if (name.startsWith('cpu')) {
-            chart = cpuChart;
-        } else if (name == 'mem' || name == 'swap') {
-            chart = memChart;
-        } else {
-            return;
-        }
+        $.each(value, function(index, sensorInfo) {
+            var name = sensorInfo.getName();
 
-        var series = chart.get(name);
-        var time = sensorValue.getTime()
-                .toNumber();
-        var value = sensorValue.getValue();
-        var point = [time, value];
+            var chart = charts[name];
 
-        if (series == null) {
-            chart.addSeries({
-                id: name,
-                name: name,
-                data: [point],
-                visible: false
-            }, false);
-        } else {
-            var shift = series.xData.length > 60;
+            var value = sensorInfo.getValue();
 
-            series.addPoint(point, false, shift);
-        }
+            $.each(value, function(index, sensorValue) {
+                var name = sensorValue.getName();
+                var series = chart.get(name);
+                var time = sensorMessage.getTime()
+                    .toNumber();
+                var value = sensorValue.getValue()
+                var point = [time, value];
+
+                if (series == null) {
+                    chart.addSeries({
+                        id: name,
+                        name: name,
+                        data: [point],
+                        visible: false
+                    }, false);
+                } else {
+                    var shift = series.xData.length > 60;
+
+                    series.addPoint(point, false, shift);
+                }
+            });
+
+            chart.redraw();
+        });
     };
 });
