@@ -20,9 +20,7 @@ public class AsyncSession {
         this.session = session;
     }
 
-    public void send(final byte[] bytes) {
-        final WebSocketMessage message = new BinaryMessage(bytes);
-
+    public void send(final WebSocketMessage message) {
         sender.execute(() -> {
             try {
                 session.sendMessage(message);

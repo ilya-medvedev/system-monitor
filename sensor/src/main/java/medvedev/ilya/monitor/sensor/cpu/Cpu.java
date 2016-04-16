@@ -1,17 +1,14 @@
 package medvedev.ilya.monitor.sensor.cpu;
 
-import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
-import medvedev.ilya.monitor.proto.Protobuf.SensorValue.Builder;
+import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
+import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 public class Cpu implements Sensor {
     private static final File FILE = new File("/proc/stat");
@@ -57,45 +54,9 @@ public class Cpu implements Sensor {
     }
 
     @Override
-    public Stream<Builder> sensorValue() {
-        return sensorLoad()
-                .parallelStream()
-                .unordered()
-                .map(this::calculateResult)
-                .filter(Cpu::resultFilter);
-    }
-
-    private Builder calculateResult(final SensorLoad sensorLoad) {
-        final String name = sensorLoad.getName();
-        final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
-
-        if (preSensorLoad == null)
-            return null;
-
-        final long used = sensorLoad.getUsed();
-        final long preUsed = preSensorLoad.getUsed();
-
-        final float value;
-        if (preUsed == used) {
-            value = 0F;
-        } else {
-            final long total = sensorLoad.getTotal();
-            final long preTotal = preSensorLoad.getTotal();
-
-            value = 100.0F * (used - preUsed) / (total - preTotal);
-        }
-
-        return SensorValue.newBuilder()
-                .setName(name)
-                .setValue(value);
-    }
-
-    private static boolean resultFilter(final Builder sensorValue) {
-        return sensorValue != null;
-    }
-
-    private List<SensorLoad> sensorLoad() {
-        final List<SensorLoad> sensorLoadList = new ArrayList<>();
+    public SensorInfo sensorInfo() {
+        final SensorInfo.Builder builder = SensorInfo.newBuilder()
+                .setName("cpu");
 
         try (final Scanner scanner = new Scanner(FILE)) {
             for (short cpu = -1; cpu < this.cpu; cpu++) {
@@ -113,10 +74,11 @@ public class Cpu implements Sensor {
                     used += scanner.nextLong();
                 }
 
-                final long total = used + idle;
-                final SensorLoad sensorLoad = new SensorLoad(name, used, total);
+                final SensorValue sensorValue = calculateValue(name, used, idle);
 
-                sensorLoadList.add(sensorLoad);
+                if (sensorValue != null) {
+                    builder.addValue(sensorValue);
+                }
 
                 scanner.nextLine();
             }
@@ -124,7 +86,33 @@ public class Cpu implements Sensor {
             throw new RuntimeException(e);
         }
 
-        return sensorLoadList;
+        return builder.build();
+    }
+
+    private SensorValue calculateValue(final String name, final long used, final long idle) {
+        final long total = used + idle;
+        final SensorLoad sensorLoad = new SensorLoad(name, used, total);
+
+        final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
+
+        if (preSensorLoad == null)
+            return null;
+
+        final long preUsed = preSensorLoad.getUsed();
+
+        final float value;
+        if (preUsed == used) {
+            value = 0F;
+        } else {
+            final long preTotal = preSensorLoad.getTotal();
+
+            value = 100.0F * (used - preUsed) / (total - preTotal);
+        }
+
+        return SensorValue.newBuilder()
+                .setName(name)
+                .setValue(value)
+                .build();
     }
 
     @Override

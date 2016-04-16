@@ -1,7 +1,7 @@
 package medvedev.ilya.monitor.sensor.mem;
 
-import medvedev.ilya.monitor.proto.Protobuf.SensorValue;
-import medvedev.ilya.monitor.proto.Protobuf.SensorValue.Builder;
+import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
+import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
 
 import java.io.File;
@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 public class Mem implements Sensor {
     /**
@@ -143,7 +142,7 @@ public class Mem implements Sensor {
     }
 
     @Override
-    public Stream<Builder> sensorValue() {
+    public SensorInfo sensorInfo() {
         int memFree = 0;
         int swapFree = 0;
 
@@ -174,29 +173,32 @@ public class Mem implements Sensor {
             throw new RuntimeException(e);
         }
 
-        final Builder mem = calculateMemValue(memFree);
-        final Builder swap = calculateSwapValue(swapFree);
+        final SensorValue mem = calculateMemValue(memFree);
+        final SensorValue swap = calculateSwapValue(swapFree);
 
-        return Stream.of(mem, swap)
-                .parallel()
-                .unordered();
+        return SensorInfo.newBuilder()
+                .setName("mem")
+                .addValue(mem)
+                .addValue(swap)
+                .build();
     }
 
-    private Builder calculateMemValue(final int free) {
+    private SensorValue calculateMemValue(final int free) {
         return calculateValue(MEM_SENSOR, memTotal, free);
     }
 
-    private Builder calculateSwapValue(final int free) {
+    private SensorValue calculateSwapValue(final int free) {
         return calculateValue(SWAP_SENSOR, swapTotal, free);
     }
 
-    private static Builder calculateValue(final String name, final int total, final int free) {
+    private static SensorValue calculateValue(final String name, final int total, final int free) {
         final int used = total - free;
 
         final float value = 100.0F * used / total;
 
         return SensorValue.newBuilder()
                 .setName(name)
-                .setValue(value);
+                .setValue(value)
+                .build();
     }
 }
