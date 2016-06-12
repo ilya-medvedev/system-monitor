@@ -60,16 +60,26 @@ public class Mem implements Sensor {
     private static final String MEM_SENSOR = "mem";
     private static final String SWAP_SENSOR = "swap";
 
-    private static final File FILE = new File("/proc/meminfo");
+    private final File file;
+    private final int memTotal;
+    private final int swapTotal;
+    private final Map<Short, Boolean> memLineMap;
 
-    public static Mem byFile() {
+    private Mem(final File file, final int memTotal, final int swapTotal, final Map<Short, Boolean> memLineMap) {
+        this.file = file;
+        this.memTotal = memTotal;
+        this.swapTotal = swapTotal;
+        this.memLineMap = memLineMap;
+    }
+
+    public static Mem byFile(final File file) {
         Integer memTotal = null;
         Integer swapTotal = null;
         final Map<Short, Boolean> roleMap = new TreeMap<>();
 
         final Map<String, Short> stat = new HashMap<>();
 
-        try (final Scanner scanner = new Scanner(FILE)) {
+        try (final Scanner scanner = new Scanner(file)) {
             short i = 0;
 
             do {
@@ -128,17 +138,7 @@ public class Mem implements Sensor {
             roleMap.put(swapCached, true);
         }
 
-        return new Mem(memTotal, swapTotal, roleMap);
-    }
-
-    private final int memTotal;
-    private final int swapTotal;
-    private final Map<Short, Boolean> memLineMap;
-
-    private Mem(final int memTotal, final int swapTotal, final Map<Short, Boolean> memLineMap) {
-        this.memTotal = memTotal;
-        this.swapTotal = swapTotal;
-        this.memLineMap = memLineMap;
+        return new Mem(file, memTotal, swapTotal, roleMap);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class Mem implements Sensor {
         int memFree = 0;
         int swapFree = 0;
 
-        try (final Scanner scanner = new Scanner(FILE)) {
+        try (final Scanner scanner = new Scanner(file)) {
             short lineIndex = 0;
 
             for (final Map.Entry<Short, Boolean> memLine : memLineMap.entrySet()) {
