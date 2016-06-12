@@ -11,7 +11,6 @@ public class SessionActor extends UntypedActor {
         this.session = session;
     }
 
-
     @Override
     public void onReceive(final Object message) throws Exception {
         session.sendMessage((WebSocketMessage) message);
