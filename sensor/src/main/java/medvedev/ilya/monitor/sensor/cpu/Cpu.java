@@ -11,13 +11,23 @@ import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Cpu implements Sensor {
-    private static final File FILE = new File("/proc/stat");
+    private final File file;
+    private final short cpu;
+    private final short stats;
 
-    public static Cpu byFile() {
+    private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
+
+    private Cpu(final File file, final short cpu, final short stats) {
+        this.file = file;
+        this.cpu = cpu;
+        this.stats = stats;
+    }
+
+    public static Cpu byFile(final File file) {
         short cpu = 0;
         short stats = 0;
 
-        try (final Scanner scanner = new Scanner(FILE)) {
+        try (final Scanner scanner = new Scanner(file)) {
             for (byte i = 0; i < 6; i++) {
                 scanner.next();
             }
@@ -40,17 +50,7 @@ public class Cpu implements Sensor {
             throw new RuntimeException(e);
         }
 
-        return new Cpu(cpu, stats);
-    }
-
-    private final short cpu;
-    private final short stats;
-
-    private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
-
-    private Cpu(final short cpu, final short stats) {
-        this.cpu = cpu;
-        this.stats = stats;
+        return new Cpu(file, cpu, stats);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class Cpu implements Sensor {
         final SensorInfo.Builder builder = SensorInfo.newBuilder()
                 .setName("cpu");
 
-        try (final Scanner scanner = new Scanner(FILE)) {
+        try (final Scanner scanner = new Scanner(file)) {
             for (short cpu = -1; cpu < this.cpu; cpu++) {
                 final String name = scanner.next();
 
@@ -91,7 +91,7 @@ public class Cpu implements Sensor {
 
     private SensorValue calculateValue(final String name, final long used, final long idle) {
         final long total = used + idle;
-        final SensorLoad sensorLoad = new SensorLoad(name, used, total);
+        final SensorLoad sensorLoad = new SensorLoad(used, total);
 
         final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
 
