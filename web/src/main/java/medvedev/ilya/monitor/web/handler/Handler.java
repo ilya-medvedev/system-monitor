@@ -1,12 +1,15 @@
 package medvedev.ilya.monitor.web.handler;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.actor.Props;
+import akka.actor.TypedActor;
+import akka.actor.TypedActorExtension;
+import akka.actor.TypedProps;
+import akka.japi.Creator;
 import medvedev.ilya.monitor.proto.Protobuf.Message;
 import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
 import medvedev.ilya.monitor.sensor.Sensor;
-import medvedev.ilya.monitor.web.actor.SessionActor;
+import medvedev.ilya.monitor.web.sender.WebSocketSender;
+import medvedev.ilya.monitor.web.sender.WebSocketSessionSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.BinaryMessage;
@@ -28,12 +31,12 @@ import java.util.stream.Collectors;
 public class Handler extends AbstractWebSocketHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
 
-    private static final ActorRef NO_SENDER = ActorRef.noSender();
-
     private final Sensor[] sensors;
 
-    private final ActorSystem system = ActorSystem.create();
-    private final Map<WebSocketSession, ActorRef> actors = new ConcurrentHashMap<>();
+    private final ActorSystem actorSystem = ActorSystem.create();
+    private final TypedActorExtension typedActorExtension = TypedActor.get(actorSystem);
+
+    private final Map<WebSocketSession, WebSocketSender> sessions = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture scheduledFuture;
@@ -57,13 +60,13 @@ public class Handler extends AbstractWebSocketHandler {
                 .build()
                 .toByteArray();
 
-        actors.values()
+        sessions.values()
                 .parallelStream()
                 .unordered()
-                .forEach(actorRef -> {
+                .forEach(webSocketSender -> {
                     final WebSocketMessage message = new BinaryMessage(bytes);
 
-                    actorRef.tell(message, NO_SENDER);
+                    webSocketSender.send(message);
                 });
     }
 
@@ -77,24 +80,24 @@ public class Handler extends AbstractWebSocketHandler {
         }
     }
 
-    @Override
-    public synchronized void afterConnectionEstablished(final WebSocketSession session) {
-        if (actors.isEmpty()) {
+    private synchronized void putWebSocketSender(
+            final WebSocketSession session,
+            final WebSocketSender webSocketSender
+    ) {
+        final boolean empty = sessions.isEmpty();
+
+        sessions.put(session, webSocketSender);
+
+        if (empty) {
             scheduledFuture = executorService.scheduleAtFixedRate(this::exceptionHandler, 0, 1, TimeUnit.SECONDS);
         }
-
-        final ActorRef actorRef = system.actorOf(Props.create(SessionActor.class, session));
-
-        actors.put(session, actorRef);
     }
 
-    @Override
-    public synchronized void afterConnectionClosed(final WebSocketSession session, final CloseStatus status) {
-        final ActorRef actorRef = actors.remove(session);
+    private synchronized WebSocketSender removeWebSocketSender(final WebSocketSession session) {
+        final WebSocketSender webSocketSender = sessions.remove(session);
+        final boolean empty = sessions.isEmpty();
 
-        system.stop(actorRef);
-
-        if (actors.isEmpty()) {
+        if (empty) {
             scheduledFuture.cancel(true);
 
             Arrays.stream(sensors)
@@ -102,5 +105,24 @@ public class Handler extends AbstractWebSocketHandler {
                     .unordered()
                     .forEach(Sensor::clear);
         }
+
+        return webSocketSender;
+    }
+
+    @Override
+    public void afterConnectionEstablished(final WebSocketSession session) {
+        final Creator<WebSocketSender> creator = () -> new WebSocketSessionSender(session);
+        final TypedProps<WebSocketSender> typedProps = new TypedProps<>(WebSocketSender.class, creator);
+
+        final WebSocketSender webSocketSender = typedActorExtension.typedActorOf(typedProps);
+
+        putWebSocketSender(session, webSocketSender);
+    }
+
+    @Override
+    public void afterConnectionClosed(final WebSocketSession session, final CloseStatus status) {
+        final WebSocketSender webSocketSender = removeWebSocketSender(session);
+
+        typedActorExtension.stop(webSocketSender);
     }
 }
