@@ -1,116 +1,196 @@
 package medvedev.ilya.monitor.sensor.mem;
 
-import medvedev.ilya.monitor.sensor.model.SensorLoad;
-import medvedev.ilya.monitor.sensor.model.SensorValue;
+import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
+import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
-import medvedev.ilya.monitor.sensor.util.ScannerCommon;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.stream.Stream;
+import java.util.TreeMap;
 
 public class Mem implements Sensor {
-    private final File file = new File("/proc/meminfo");
+    /**
+     * Total usable RAM (i.e., physical RAM minus a few
+     * reserved bits and the kernel binary code).
+     */
+    private static final String MEM_TOTAL = "MemTotal:";
 
-    public Stream<SensorValue> sensorValue() {
-        final Map<String, Long> stat = new HashMap<String, Long>() {{
-            /**
-             * Total usable RAM (i.e., physical RAM minus a few
-             * reserved bits and the kernel binary code).
-             */
-            put("MemTotal:", null);
+    /** The sum of LowFree+HighFree. */
+    private static final String MEM_FREE = "MemFree:";
 
-            /** The sum of LowFree+HighFree. */
-            put("MemFree:", null);
+    /**
+     * (since Linux 3.14)
+     * An estimate of how much memory is available for
+     * starting new applications, without swapping.
+     */
+    private static final String MEM_AVAILABLE = "MemAvailable:";
 
-            /**
-             * (since Linux 3.14)
-             * An estimate of how much memory is available for
-             * starting new applications, without swapping.
-             */
-            put("MemAvailable:", null);
+    /**
+     * Relatively temporary storage for raw disk blocks that
+     * shouldn't get tremendously large (20MB or so).
+     */
+    private static final String BUFFERS = "Buffers:";
 
-            /**
-             * Relatively temporary storage for raw disk blocks that
-             * shouldn't get tremendously large (20MB or so).
-             */
-            put("Buffers:", null);
+    /**
+     * In-memory cache for files read from the disk (the page
+     * cache).  Doesn't include SwapCached.
+     */
+    private static final String CACHED = "Cached:";
 
-            /**
-             * In-memory cache for files read from the disk (the page
-             * cache).  Doesn't include SwapCached.
-             */
-            put("Cached:", null);
+    /**
+     * Memory that once was swapped out, is swapped back in
+     * but still also is in the swap file.  (If memory
+     * pressure is high, these pages don't need to be swapped
+     * out again because they are already in the swap file.
+     * This saves I/O.)
+     */
+    private static final String SWAP_CACHED = "SwapCached:";
 
-            /**
-             * Memory that once was swapped out, is swapped back in
-             * but still also is in the swap file.  (If memory
-             * pressure is high, these pages don't need to be swapped
-             * out again because they are already in the swap file.
-             * This saves I/O.)
-             */
-            put("SwapCached:", null);
+    /* Total amount of swap space available. */
+    private static final String SWAP_TOTAL = "SwapTotal:";
 
-            /* Total amount of swap space available. */
-            put("SwapTotal:", null);
+    /* Amount of swap space that is currently unused. */
+    private static final String SWAP_FREE = "SwapFree:";
 
-            /* Amount of swap space that is currently unused. */
-            put("SwapFree:", null);
-        }};
+    private static final String WRONG_FILE = "File is wrong";
+
+    private static final String MEM_SENSOR = "mem";
+    private static final String SWAP_SENSOR = "swap";
+
+    private final File file;
+    private final int memTotal;
+    private final int swapTotal;
+    private final Map<Short, Boolean> memLineMap;
+
+    private Mem(final File file, final int memTotal, final int swapTotal, final Map<Short, Boolean> memLineMap) {
+        this.file = file;
+        this.memTotal = memTotal;
+        this.swapTotal = swapTotal;
+        this.memLineMap = memLineMap;
+    }
+
+    public static Mem byFile(final File file) {
+        Integer memTotal = null;
+        Integer swapTotal = null;
+        final Map<Short, Boolean> roleMap = new TreeMap<>();
+
+        final Map<String, Short> stat = new HashMap<>();
 
         try (final Scanner scanner = new Scanner(file)) {
+            short i = 0;
+
             do {
                 final String name = scanner.next();
 
-                if (stat.containsKey(name)) {
-                    final Long value = scanner.nextLong();
-
-                    stat.put(name, value);
+                switch (name) {
+                    case MEM_TOTAL:
+                        memTotal = scanner.nextInt();
+                        break;
+                    case SWAP_TOTAL:
+                        swapTotal = scanner.nextInt();
+                        break;
+                    default:
+                        stat.put(name, i);
+                        break;
                 }
-            } while (ScannerCommon.safetyNextLine(scanner));
+
+                if (scanner.hasNextLine()) {
+                    scanner.nextLine();
+
+                    i++;
+                }
+            } while (scanner.hasNext());
         } catch (final FileNotFoundException e) {
             throw new RuntimeException(e);
         }
 
-        final long memFree;
-        final Long available = stat.get("MemAvailable:");
-        if (available != null) {
-            memFree = available;
-        } else {
-            final long free = stat.get("MemFree:");
-            final long buffers = stat.get("Buffers:");
-            final long cached = stat.get("Cached:");
-            final long swapCached = stat.get("SwapCached:");
-
-            memFree = free - buffers - cached - swapCached;
+        if (memTotal == null || swapTotal == null) {
+            throw new RuntimeException(WRONG_FILE);
         }
-        final long memTotal = stat.get("MemTotal:");
-        final long memUsed = memTotal - memFree;
 
-        final long swapFree = stat.get("SwapFree:");
-        final long swapTotal = stat.get("SwapTotal:");
-        final long swapUsed = swapTotal - swapFree;
+        final Short swapFree = stat.get(SWAP_FREE);
 
-        final SensorLoad mem = new SensorLoad("mem", memUsed, memTotal);
-        final SensorLoad swap = new SensorLoad("swap", swapUsed, swapTotal);
+        if (swapFree == null) {
+            throw new RuntimeException(WRONG_FILE);
+        }
 
-        return Stream.of(mem, swap)
-                .parallel()
-                .unordered()
-                .map(Mem::calculateResult);
+        roleMap.put(swapFree, false);
+
+        final Short available = stat.get(MEM_AVAILABLE);
+        if (available != null) {
+            roleMap.put(available, true);
+        } else {
+            final Short free = stat.get(MEM_FREE);
+            final Short buffers = stat.get(BUFFERS);
+            final Short cached = stat.get(CACHED);
+            final Short swapCached = stat.get(SWAP_CACHED);
+
+            if (free == null || buffers == null || cached == null || swapCached == null) {
+                throw new RuntimeException(WRONG_FILE);
+            }
+
+            roleMap.put(free, true);
+            roleMap.put(buffers, true);
+            roleMap.put(cached, true);
+            roleMap.put(swapCached, true);
+        }
+
+        return new Mem(file, memTotal, swapTotal, roleMap);
     }
 
-    private static SensorValue calculateResult(final SensorLoad sensorLoad) {
-        final String name = sensorLoad.getName();
+    @Override
+    public SensorInfo sensorInfo() {
+        int memFree = 0;
+        int swapFree = 0;
 
-        final long usage = sensorLoad.getUsed();
-        final long total = sensorLoad.getTotal();
+        try (final Scanner scanner = new Scanner(file)) {
+            short lineIndex = 0;
 
-        final double value = 100.0 * usage / total;
+            for (final Map.Entry<Short, Boolean> memLine : memLineMap.entrySet()) {
+                final short line = memLine.getKey();
 
-        return new SensorValue(name, value);
+                while (lineIndex < line) {
+                    scanner.nextLine();
+
+                    lineIndex++;
+                }
+
+                scanner.next();
+
+                final int value = scanner.nextInt();
+                final boolean mem = memLine.getValue();
+
+                if (mem) {
+                    memFree += value;
+                } else {
+                    swapFree += value;
+                }
+            }
+        } catch (final FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        final SensorValue mem = calculateValue(MEM_SENSOR, memTotal, memFree);
+        final SensorValue swap = calculateValue(SWAP_SENSOR, swapTotal, swapFree);
+
+        return SensorInfo.newBuilder()
+                .setName("mem")
+                .addValue(mem)
+                .addValue(swap)
+                .build();
+    }
+
+    private static SensorValue calculateValue(final String name, final int total, final int free) {
+        final int used = total - free;
+
+        final float value = 100.0F * used / total;
+
+        return SensorValue.newBuilder()
+                .setName(name)
+                .setValue(value)
+                .build();
     }
 }

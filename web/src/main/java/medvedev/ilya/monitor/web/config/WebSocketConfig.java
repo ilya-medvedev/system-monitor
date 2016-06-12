@@ -1,6 +1,6 @@
 package medvedev.ilya.monitor.web.config;
 
-import medvedev.ilya.monitor.web.handler.MonitorHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -10,10 +10,13 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
+    private static final String WEB_SOCKET_PATH = "ws";
+
+    @Autowired
+    private WebSocketHandler webSocketHandler;
+
     @Override
     public void registerWebSocketHandlers(final WebSocketHandlerRegistry registry) {
-        final WebSocketHandler handler = new MonitorHandler();
-
-        registry.addHandler(handler, "ws");
+        registry.addHandler(webSocketHandler, WEB_SOCKET_PATH);
     }
 }
