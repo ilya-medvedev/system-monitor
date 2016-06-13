@@ -1,8 +1,10 @@
-package medvedev.ilya.monitor.sensor.mem;
+package medvedev.ilya.monitor.sensor.impl.mem;
 
 import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
 import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
+import medvedev.ilya.monitor.sensor.impl.exception.SensorFileNotFound;
+import medvedev.ilya.monitor.sensor.impl.exception.WrongSensorFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -55,8 +57,6 @@ public class Mem implements Sensor {
     /* Amount of swap space that is currently unused. */
     private static final String SWAP_FREE = "SwapFree:";
 
-    private static final String WRONG_FILE = "File is wrong";
-
     private static final String MEM_SENSOR = "mem";
     private static final String SWAP_SENSOR = "swap";
 
@@ -104,17 +104,17 @@ public class Mem implements Sensor {
                 }
             } while (scanner.hasNext());
         } catch (final FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new SensorFileNotFound(e);
         }
 
         if (memTotal == null || swapTotal == null) {
-            throw new RuntimeException(WRONG_FILE);
+            throw new WrongSensorFile();
         }
 
         final Short swapFree = stat.get(SWAP_FREE);
 
         if (swapFree == null) {
-            throw new RuntimeException(WRONG_FILE);
+            throw new WrongSensorFile();
         }
 
         roleMap.put(swapFree, false);
@@ -129,7 +129,7 @@ public class Mem implements Sensor {
             final Short swapCached = stat.get(SWAP_CACHED);
 
             if (free == null || buffers == null || cached == null || swapCached == null) {
-                throw new RuntimeException(WRONG_FILE);
+                throw new WrongSensorFile();
             }
 
             roleMap.put(free, true);
@@ -170,7 +170,7 @@ public class Mem implements Sensor {
                 }
             }
         } catch (final FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new SensorFileNotFound(e);
         }
 
         final SensorValue mem = calculateValue(MEM_SENSOR, memTotal, memFree);

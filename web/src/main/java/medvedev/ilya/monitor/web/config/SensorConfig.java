@@ -1,7 +1,7 @@
 package medvedev.ilya.monitor.web.config;
 
-import medvedev.ilya.monitor.sensor.cpu.Cpu;
-import medvedev.ilya.monitor.sensor.mem.Mem;
+import medvedev.ilya.monitor.sensor.impl.cpu.Cpu;
+import medvedev.ilya.monitor.sensor.impl.mem.Mem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

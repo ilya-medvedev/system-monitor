@@ -1,4 +1,4 @@
-package medvedev.ilya.monitor.sensor.cpu;
+package medvedev.ilya.monitor.sensor.impl.cpu;
 
 class SensorLoad {
     private final long used;

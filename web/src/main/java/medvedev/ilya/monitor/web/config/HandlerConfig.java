@@ -1,8 +1,8 @@
 package medvedev.ilya.monitor.web.config;
 
 import medvedev.ilya.monitor.sensor.Sensor;
-import medvedev.ilya.monitor.sensor.cpu.Cpu;
-import medvedev.ilya.monitor.sensor.mem.Mem;
+import medvedev.ilya.monitor.sensor.impl.cpu.Cpu;
+import medvedev.ilya.monitor.sensor.impl.mem.Mem;
 import medvedev.ilya.monitor.web.handler.Handler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

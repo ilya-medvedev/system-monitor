@@ -1,8 +1,9 @@
-package medvedev.ilya.monitor.sensor.cpu;
+package medvedev.ilya.monitor.sensor.impl.cpu;
 
 import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
 import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
+import medvedev.ilya.monitor.sensor.impl.exception.SensorFileNotFound;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -47,7 +48,7 @@ public class Cpu implements Sensor {
                 name = scanner.next();
             }
         } catch (final FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new SensorFileNotFound(e);
         }
 
         return new Cpu(file, cpu, stats);
@@ -83,7 +84,7 @@ public class Cpu implements Sensor {
                 scanner.nextLine();
             }
         } catch (final FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new SensorFileNotFound(e);
         }
 
         return builder.build();

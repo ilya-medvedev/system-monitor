@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 public class Handler extends AbstractWebSocketHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
 
+    private static final String UNKNOWN_ERROR = "Unknown error";
+
     private final Sensor[] sensors;
 
     private final ActorSystem actorSystem = ActorSystem.create();
@@ -74,9 +76,7 @@ public class Handler extends AbstractWebSocketHandler {
         try {
             sendStats();
         } catch (final Exception e) {
-            final String message = e.getMessage();
-
-            LOGGER.warn(message, e);
+            LOGGER.warn(UNKNOWN_ERROR, e);
         }
     }
 
