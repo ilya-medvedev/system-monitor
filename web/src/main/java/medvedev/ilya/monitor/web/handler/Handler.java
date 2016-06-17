@@ -43,7 +43,7 @@ public class Handler extends AbstractWebSocketHandler {
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture scheduledFuture;
 
-    public Handler(Sensor[] sensors) {
+    public Handler(final Sensor[] sensors) {
         this.sensors = sensors;
     }
 
@@ -89,7 +89,7 @@ public class Handler extends AbstractWebSocketHandler {
         sessions.put(session, webSocketSender);
 
         if (empty) {
-            scheduledFuture = executorService.scheduleAtFixedRate(this::exceptionHandler, 0, 1, TimeUnit.SECONDS);
+            scheduledFuture = executorService.scheduleAtFixedRate(this::exceptionHandler, 0, 3, TimeUnit.SECONDS);
         }
     }
 

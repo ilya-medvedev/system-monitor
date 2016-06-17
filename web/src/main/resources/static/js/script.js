@@ -132,7 +132,7 @@ $(function() {
                         visible: false
                     }, false);
                 } else {
-                    var shift = series.xData.length > 60;
+                    var shift = series.xData.length > 20;
 
                     series.addPoint(point, false, shift);
                 }

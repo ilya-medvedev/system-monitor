@@ -96,8 +96,9 @@ public class Cpu implements Sensor {
 
         final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
 
-        if (preSensorLoad == null)
+        if (preSensorLoad == null) {
             return null;
+        }
 
         final long preUsed = preSensorLoad.getUsed();
 
