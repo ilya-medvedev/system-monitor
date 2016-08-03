@@ -1,16 +1,18 @@
-package medvedev.ilya.monitor.proto;
+syntax = "proto3";
 
-message Message {
+package medvedev.ilya.monitor.protobuf;
+
+message SensorMessage {
     message SensorInfo {
         message SensorValue {
-            required string name = 1;
-            required float value = 2;
+            string name = 1;
+            float value = 2;
         }
 
-        required string name = 1;
+        string name = 1;
         repeated SensorValue value = 2;
     }
 
-    required int64 time = 1;
+    int64 time = 1;
     repeated SensorInfo value = 2;
 }

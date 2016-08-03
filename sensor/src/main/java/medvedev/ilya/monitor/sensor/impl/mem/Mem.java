@@ -1,7 +1,7 @@
 package medvedev.ilya.monitor.sensor.impl.mem;
 
-import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
-import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo.SensorValue;
+import medvedev.ilya.monitor.protobuf.Protobuf.SensorMessage.SensorInfo;
+import medvedev.ilya.monitor.protobuf.Protobuf.SensorMessage.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.impl.exception.SensorFileNotFound;
 import medvedev.ilya.monitor.sensor.impl.exception.WrongSensorFile;

@@ -5,8 +5,8 @@ import akka.actor.TypedActor;
 import akka.actor.TypedActorExtension;
 import akka.actor.TypedProps;
 import akka.japi.Creator;
-import medvedev.ilya.monitor.proto.Protobuf.Message;
-import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
+import medvedev.ilya.monitor.protobuf.Protobuf.SensorMessage;
+import medvedev.ilya.monitor.protobuf.Protobuf.SensorMessage.SensorInfo;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.web.sender.WebSocketSender;
 import medvedev.ilya.monitor.web.sender.WebSocketSessionSender;
@@ -56,7 +56,7 @@ public class Handler extends AbstractWebSocketHandler {
                 .map(Sensor::sensorInfo)
                 .collect(Collectors.toList());
 
-        final byte[] bytes = Message.newBuilder()
+        final byte[] bytes = SensorMessage.newBuilder()
                 .setTime(time)
                 .addAllValue(sensorInfoList)
                 .build()

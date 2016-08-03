@@ -98,29 +98,25 @@ var charts = {
     mem: $('#mem').highcharts()
 };
 
-var Message = dcodeIO.ProtoBuf
-        .loadProtoFile("proto/protobuf.proto")
-        .build("medvedev.ilya.monitor.proto.Message");
+goog.require('proto.medvedev.ilya.monitor.protobuf.SensorMessage');
 
 $(function() {
     socket.onmessage = function(message) {
-        var data = message.data;
-        var sensorMessage = Message.decode(data);
+        var sensorMessage = proto.medvedev.ilya.monitor.protobuf.SensorMessage.deserializeBinary(message.data);
 
-        var value = sensorMessage.getValue();
+        var value = sensorMessage.getValueList();
 
         $.each(value, function(index, sensorInfo) {
             var name = sensorInfo.getName();
 
             var chart = charts[name];
 
-            var value = sensorInfo.getValue();
+            var value = sensorInfo.getValueList();
 
             $.each(value, function(index, sensorValue) {
                 var name = sensorValue.getName();
                 var series = chart.get(name);
-                var time = sensorMessage.getTime()
-                    .toNumber();
+                var time = sensorMessage.getTime();
                 var value = sensorValue.getValue()
                 var point = [time, value];
 

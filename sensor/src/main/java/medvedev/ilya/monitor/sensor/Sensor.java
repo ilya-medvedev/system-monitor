@@ -1,6 +1,6 @@
 package medvedev.ilya.monitor.sensor;
 
-import medvedev.ilya.monitor.proto.Protobuf.Message.SensorInfo;
+import medvedev.ilya.monitor.protobuf.Protobuf.SensorMessage.SensorInfo;
 
 public interface Sensor {
     SensorInfo sensorInfo();
