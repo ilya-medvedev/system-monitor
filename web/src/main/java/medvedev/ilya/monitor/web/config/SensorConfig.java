@@ -1,6 +1,7 @@
 package medvedev.ilya.monitor.web.config;
 
 import medvedev.ilya.monitor.sensor.impl.cpu.Cpu;
+import medvedev.ilya.monitor.sensor.impl.disk.Disk;
 import medvedev.ilya.monitor.sensor.impl.mem.Mem;
 import medvedev.ilya.monitor.sensor.impl.net.Net;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +23,19 @@ public class SensorConfig {
     }
 
     @Bean
-    public Net net(@Value("${sensors.net.file}") final File file) {
-        return Net.byFile(file);
+    public Disk disk(
+            @Value("${sensors.disk.file}") final File file,
+            @Value("${sensors.disk.device}") final String name,
+            @Value("${sensors.disk.sector}") final short size
+    ) {
+        return Disk.byFile(file, name, size);
+    }
+
+    @Bean
+    public Net net(
+            @Value("${sensors.net.file}") final File file,
+            @Value("${sensors.net.interface}") final String name
+    ) {
+        return Net.byFile(file, name);
     }
 }

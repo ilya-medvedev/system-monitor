@@ -1,4 +1,9 @@
 sensors:
-  cpu.file: /proc/stat
-  mem.file: /proc/meminfo
-  net.file: /proc/net/dev
+  cpu:
+    file: /proc/stat
+  mem:
+    file: /proc/meminfo
+  disk:
+    file: /proc/diskstats
+  net:
+    file: /proc/net/dev

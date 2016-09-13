@@ -83,6 +83,48 @@ $('#mem').highcharts({
     ]
 });
 
+$('#disk').highcharts({
+    chart: {
+        type: 'spline',
+        animation: Highcharts.svg,
+    },
+    title: {
+        text: 'Disk'
+    },
+    xAxis: {
+        type: 'datetime',
+        maxZoom: 60000
+    },
+    yAxis: {
+        title: {
+            text: false
+        }
+    },
+    tooltip: {
+        valueSuffix: ' bytes'
+    },
+    plotOptions: {
+        spline: {
+            marker: {
+                enabled: false
+            }
+        }
+    },
+    exporting: {
+        enabled: false
+    },
+    series: [
+        {
+            id: 'read',
+            name: 'Read'
+        },
+        {
+            id: 'write',
+            name: 'Write'
+        }
+    ]
+});
+
 $('#net').highcharts({
     chart: {
         type: 'spline',
@@ -112,12 +154,23 @@ $('#net').highcharts({
     },
     exporting: {
         enabled: false
-    }
+    },
+    series: [
+        {
+            id: 'down',
+            name: 'Download'
+        },
+        {
+            id: 'up',
+            name: 'Upload'
+        }
+    ]
 });
 
 var charts = {
     cpu: $('#cpu').highcharts(),
     mem: $('#mem').highcharts(),
+    disk: $('#disk').highcharts(),
     net: $('#net').highcharts()
 };
 

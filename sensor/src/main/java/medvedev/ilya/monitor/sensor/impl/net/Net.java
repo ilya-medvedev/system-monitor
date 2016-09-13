@@ -8,11 +8,7 @@ import medvedev.ilya.monitor.sensor.impl.exception.WrongSensorFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class Net implements Sensor {
     private final File file;
@@ -20,24 +16,28 @@ public class Net implements Sensor {
     private final short receive;
     private final short transmit;
 
-    private final short interfaces;
+    private final short line;
 
-    private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
+    private SensorLoad preSensorLoad = null;
 
-    private Net(final File file, final short receive, final short transmit, final short interfaces) {
+    private Net(final File file, final short receive, final short transmit, final short line) {
         this.file = file;
         this.receive = receive;
         this.transmit = transmit;
-        this.interfaces = interfaces;
+        this.line = line;
     }
 
-    public static Net byFile(final File file) {
+    public static Net byFile(final File file, final String name) {
         Short receive = null;
         Short transmit = null;
 
-        short interfaces = 0;
+        Short line = null;
 
         try (final Scanner scanner = new Scanner(file)) {
+            if (!scanner.hasNextLine()) {
+                throw new WrongSensorFile();
+            }
+
             scanner.nextLine();
 
             for (short i = 0; scanner.hasNext() && transmit == null;) {
@@ -63,68 +63,69 @@ public class Net implements Sensor {
                 throw new WrongSensorFile();
             }
 
-            while (scanner.hasNextLine()) {
+            for (short i = 0; scanner.hasNextLine() && line == null; i++) {
                 scanner.nextLine();
 
-                if (scanner.hasNext()) {
-                    interfaces++;
+                if (!scanner.hasNext()) {
+                    throw new WrongSensorFile();
                 }
+
+                final String next = scanner.next();
+                final int length = next.length();
+                final boolean equals = next.substring(0, length - 1)
+                        .equals(name);
+
+                if (equals) {
+                    line = i;
+                }
+            }
+
+            if (line == null) {
+                throw new WrongSensorFile();
             }
         } catch (final FileNotFoundException e) {
             throw new SensorFileNotFound(e);
         }
 
-        return new Net(file, receive, transmit, interfaces);
+        return new Net(file, receive, transmit, line);
     }
 
     @Override
     public SensorInfo sensorInfo() {
-        final SensorInfo.Builder builder = SensorInfo.newBuilder()
-                .setName("net");
+        final long receive;
+        final long transmit;
 
         try (final Scanner scanner = new Scanner(file)) {
             scanner.nextLine();
+            scanner.nextLine();
 
-            for (short interfaces = 0; interfaces < this.interfaces; interfaces++) {
+            for (short interfaceLine = 0; interfaceLine < this.line; interfaceLine++) {
                 scanner.nextLine();
+            }
 
-                final String name = scanner.next();
+            short column = 0;
 
-                short column = 0;
-
-                while (column < this.receive) {
-                    scanner.next();
-
-                    column++;
-                }
-                final long receive = scanner.nextLong();
+            while (column < this.receive) {
+                scanner.next();
 
                 column++;
-
-                while (column < this.transmit) {
-                    scanner.next();
-
-                    column++;
-                }
-                final long transmit = scanner.nextLong();
-
-                final List<SensorValue> sensorValues = calculateValue(name, receive, transmit);
-
-                if (sensorValues != null) {
-                    builder.addAllValue(sensorValues);
-                }
             }
+            receive = scanner.nextLong();
+
+            column++;
+
+            while (column < this.transmit) {
+                scanner.next();
+
+                column++;
+            }
+            transmit = scanner.nextLong();
         } catch (final FileNotFoundException e) {
             throw new SensorFileNotFound(e);
         }
 
-        return builder.build();
-    }
-
-    private List<SensorValue> calculateValue(final String name, final long receive, final long transmit) {
-        final SensorLoad sensorLoad = new SensorLoad(receive, transmit);
-
-        final SensorLoad preSensorLoad = preSensorLoadMap.put(name, sensorLoad);
+        final SensorLoad preSensorLoad = this.preSensorLoad;
+        this.preSensorLoad = new SensorLoad(receive, transmit);
 
         if (preSensorLoad == null) {
             return null;
@@ -136,21 +137,21 @@ public class Net implements Sensor {
         final long receiveValue = receive - preReceive;
         final long transmitValue = transmit - preTransmit;
 
-        final SensorValue receiveSensorValue = SensorValue.newBuilder()
-                .setName(name + " Down")
-                .setValue(receiveValue)
+        return SensorInfo.newBuilder()
+                .setName("net")
+                .addValue(SensorValue.newBuilder()
+                        .setName("down")
+                        .setValue(receiveValue)
+                        .build())
+                .addValue(SensorValue.newBuilder()
+                        .setName("up")
+                        .setValue(transmitValue)
+                        .build())
                 .build();
-
-        final SensorValue transmitSensorValue = SensorValue.newBuilder()
-                .setName(name + " Up")
-                .setValue(transmitValue)
-                .build();
-
-        return Arrays.asList(receiveSensorValue, transmitSensorValue);
     }
 
     @Override
     public void clear() {
-        preSensorLoadMap.clear();
+        preSensorLoad = null;
     }
 }
