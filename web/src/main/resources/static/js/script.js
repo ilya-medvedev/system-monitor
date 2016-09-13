@@ -11,11 +11,6 @@ $('#cpu').highcharts({
     chart: {
         type: 'spline',
         animation: Highcharts.svg,
-        events: {
-            load: function () {
-                cpuChart = this;
-            }
-        }
     },
     title: {
         text: 'CPU'
@@ -44,8 +39,8 @@ $('#cpu').highcharts({
     },
     series: [
         {
-            id: "cpu",
-            name: "cpu"
+            id: 'cpu',
+            name: 'cpu'
         }
     ]
 });
@@ -54,11 +49,6 @@ $('#mem').highcharts({
     chart: {
         type: 'spline',
         animation: Highcharts.svg,
-        events: {
-            load: function () {
-                cpuChart = this;
-            }
-        }
     },
     title: {
         text: 'Memory'
@@ -87,15 +77,48 @@ $('#mem').highcharts({
     },
     series: [
         {
-            id: "mem",
-            name: "mem"
+            id: 'mem',
+            name: 'mem'
         }
     ]
 });
 
+$('#net').highcharts({
+    chart: {
+        type: 'spline',
+        animation: Highcharts.svg,
+    },
+    title: {
+        text: 'Network'
+    },
+    xAxis: {
+        type: 'datetime',
+        maxZoom: 60000
+    },
+    yAxis: {
+        title: {
+            text: false
+        }
+    },
+    tooltip: {
+        valueSuffix: ' bytes'
+    },
+    plotOptions: {
+        spline: {
+            marker: {
+                enabled: false
+            }
+        }
+    },
+    exporting: {
+        enabled: false
+    }
+});
+
 var charts = {
     cpu: $('#cpu').highcharts(),
-    mem: $('#mem').highcharts()
+    mem: $('#mem').highcharts(),
+    net: $('#net').highcharts()
 };
 
 goog.require('proto.medvedev.ilya.monitor.protobuf.SensorMessage');

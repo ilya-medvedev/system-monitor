@@ -14,52 +14,6 @@ import java.util.Scanner;
 import java.util.TreeMap;
 
 public class Mem implements Sensor {
-    /**
-     * Total usable RAM (i.e., physical RAM minus a few
-     * reserved bits and the kernel binary code).
-     */
-    private static final String MEM_TOTAL = "MemTotal:";
-
-    /** The sum of LowFree+HighFree. */
-    private static final String MEM_FREE = "MemFree:";
-
-    /**
-     * (since Linux 3.14)
-     * An estimate of how much memory is available for
-     * starting new applications, without swapping.
-     */
-    private static final String MEM_AVAILABLE = "MemAvailable:";
-
-    /**
-     * Relatively temporary storage for raw disk blocks that
-     * shouldn't get tremendously large (20MB or so).
-     */
-    private static final String BUFFERS = "Buffers:";
-
-    /**
-     * In-memory cache for files read from the disk (the page
-     * cache).  Doesn't include SwapCached.
-     */
-    private static final String CACHED = "Cached:";
-
-    /**
-     * Memory that once was swapped out, is swapped back in
-     * but still also is in the swap file.  (If memory
-     * pressure is high, these pages don't need to be swapped
-     * out again because they are already in the swap file.
-     * This saves I/O.)
-     */
-    private static final String SWAP_CACHED = "SwapCached:";
-
-    /* Total amount of swap space available. */
-    private static final String SWAP_TOTAL = "SwapTotal:";
-
-    /* Amount of swap space that is currently unused. */
-    private static final String SWAP_FREE = "SwapFree:";
-
-    private static final String MEM_SENSOR = "mem";
-    private static final String SWAP_SENSOR = "swap";
-
     private final File file;
     private final int memTotal;
     private final int swapTotal;
@@ -86,10 +40,10 @@ public class Mem implements Sensor {
                 final String name = scanner.next();
 
                 switch (name) {
-                    case MEM_TOTAL:
+                    case "MemTotal:":
                         memTotal = scanner.nextInt();
                         break;
-                    case SWAP_TOTAL:
+                    case "SwapTotal:":
                         swapTotal = scanner.nextInt();
                         break;
                     default:
@@ -111,7 +65,7 @@ public class Mem implements Sensor {
             throw new WrongSensorFile();
         }
 
-        final Short swapFree = stat.get(SWAP_FREE);
+        final Short swapFree = stat.get("SwapFree:");
 
         if (swapFree == null) {
             throw new WrongSensorFile();
@@ -119,14 +73,14 @@ public class Mem implements Sensor {
 
         roleMap.put(swapFree, false);
 
-        final Short available = stat.get(MEM_AVAILABLE);
+        final Short available = stat.get("MemAvailable:");
         if (available != null) {
             roleMap.put(available, true);
         } else {
-            final Short free = stat.get(MEM_FREE);
-            final Short buffers = stat.get(BUFFERS);
-            final Short cached = stat.get(CACHED);
-            final Short swapCached = stat.get(SWAP_CACHED);
+            final Short free = stat.get("MemFree:");
+            final Short buffers = stat.get("Buffers:");
+            final Short cached = stat.get("Cached:");
+            final Short swapCached = stat.get("SwapCached:");
 
             if (free == null || buffers == null || cached == null || swapCached == null) {
                 throw new WrongSensorFile();
@@ -173,8 +127,8 @@ public class Mem implements Sensor {
             throw new SensorFileNotFound(e);
         }
 
-        final SensorValue mem = calculateValue(MEM_SENSOR, memTotal, memFree);
-        final SensorValue swap = calculateValue(SWAP_SENSOR, swapTotal, swapFree);
+        final SensorValue mem = calculateValue("mem", memTotal, memFree);
+        final SensorValue swap = calculateValue("swap", swapTotal, swapFree);
 
         return SensorInfo.newBuilder()
                 .setName("mem")
