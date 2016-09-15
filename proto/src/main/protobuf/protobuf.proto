@@ -1,6 +1,7 @@
 syntax = "proto3";
 
-package medvedev.ilya.monitor.protobuf;
+option java_package = "medvedev.ilya.monitor.protobuf";
+option java_multiple_files = true;
 
 message SensorMessage {
     message SensorInfo {

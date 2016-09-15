@@ -174,11 +174,11 @@ var charts = {
     net: $('#net').highcharts()
 };
 
-goog.require('proto.medvedev.ilya.monitor.protobuf.SensorMessage');
+goog.require('proto.SensorMessage');
 
 $(function() {
     socket.onmessage = function(message) {
-        var sensorMessage = proto.medvedev.ilya.monitor.protobuf.SensorMessage.deserializeBinary(message.data);
+        var sensorMessage = proto.SensorMessage.deserializeBinary(message.data);
 
         var value = sensorMessage.getValueList();
 
