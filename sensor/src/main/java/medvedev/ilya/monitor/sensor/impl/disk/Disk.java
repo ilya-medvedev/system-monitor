@@ -13,17 +13,17 @@ import java.util.Scanner;
 public class Disk implements Sensor {
     private final File file;
     private final short line;
-    private final short size;
+    private final float rate;
 
     private SensorLoad preSensorLoad = null;
 
-    private Disk(final File file, final short line, final short size) {
+    private Disk(final File file, final short line, final float rate) {
         this.file = file;
         this.line = line;
-        this.size = size;
+        this.rate = rate;
     }
 
-    public static Disk byFile(final File file, final String name, final short size) {
+    public static Disk byFile(final File file, final String name, final short size, final byte period) {
         Short line = null;
 
         try (final Scanner scanner = new Scanner(file)) {
@@ -53,7 +53,9 @@ public class Disk implements Sensor {
             throw new SensorFileNotFound(e);
         }
 
-        return new Disk(file, line, size);
+        final float rate = ((float) (size)) / period;
+
+        return new Disk(file, line, rate);
     }
 
     @Override
@@ -97,8 +99,8 @@ public class Disk implements Sensor {
         final long preRead = preSensorLoad.getRead();
         final long preWriten = preSensorLoad.getWriten();
 
-        final long readValue = (read - preRead) * size;
-        final long writenValue = (written - preWriten) * size;
+        final float readValue = (read - preRead) * rate;
+        final float writenValue = (written - preWriten) * rate;
 
         return SensorInfo.newBuilder()
                 .setName("disk")

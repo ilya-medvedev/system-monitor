@@ -35,6 +35,7 @@ public class Handler extends AbstractWebSocketHandler {
     private static final String UNKNOWN_ERROR = "Unknown error";
 
     private final Sensor[] sensors;
+    private final byte period;
 
     private final ActorSystem actorSystem = ActorSystem.create();
     private final TypedActorExtension typedActorExtension = TypedActor.get(actorSystem);
@@ -44,8 +45,9 @@ public class Handler extends AbstractWebSocketHandler {
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture scheduledFuture;
 
-    public Handler(final Sensor[] sensors) {
+    public Handler(final Sensor[] sensors, final byte period) {
         this.sensors = sensors;
+        this.period = period;
     }
 
     private void sendStats() {
@@ -91,7 +93,7 @@ public class Handler extends AbstractWebSocketHandler {
         sessions.put(session, webSocketSender);
 
         if (empty) {
-            scheduledFuture = executorService.scheduleAtFixedRate(this::exceptionHandler, 0, 3, TimeUnit.SECONDS);
+            scheduledFuture = executorService.scheduleAtFixedRate(this::exceptionHandler, 0, period, TimeUnit.SECONDS);
         }
     }
 

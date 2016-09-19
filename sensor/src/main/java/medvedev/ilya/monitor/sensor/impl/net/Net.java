@@ -18,16 +18,19 @@ public class Net implements Sensor {
 
     private final short line;
 
+    private final byte period;
+
     private SensorLoad preSensorLoad = null;
 
-    private Net(final File file, final short receive, final short transmit, final short line) {
+    private Net(final File file, final short receive, final short transmit, final short line, final byte period) {
         this.file = file;
         this.receive = receive;
         this.transmit = transmit;
         this.line = line;
+        this.period = period;
     }
 
-    public static Net byFile(final File file, final String name) {
+    public static Net byFile(final File file, final String name, final byte period) {
         Short receive = null;
         Short transmit = null;
 
@@ -87,7 +90,7 @@ public class Net implements Sensor {
             throw new SensorFileNotFound(e);
         }
 
-        return new Net(file, receive, transmit, line);
+        return new Net(file, receive, transmit, line, period);
     }
 
     @Override
@@ -134,8 +137,8 @@ public class Net implements Sensor {
         final long preReceive = preSensorLoad.getReceive();
         final long preTransmit = preSensorLoad.getTransmit();
 
-        final long receiveValue = receive - preReceive;
-        final long transmitValue = transmit - preTransmit;
+        final float receiveValue = ((float) (receive - preReceive)) / period;
+        final float transmitValue = ((float) (transmit - preTransmit)) / period;
 
         return SensorInfo.newBuilder()
                 .setName("net")

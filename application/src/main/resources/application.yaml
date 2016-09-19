@@ -1,3 +1,6 @@
+monitor:
+  period: 3
+
 sensors:
   cpu:
     file: /proc/stat
