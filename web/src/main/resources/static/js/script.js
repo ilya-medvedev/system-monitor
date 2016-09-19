@@ -83,6 +83,23 @@ $('#mem').highcharts({
     ]
 });
 
+function bytesPerSecondLabel(bytes) {
+    var suffix = ['B/s', 'kB/s', 'MB/s', 'GB/s'];
+
+    var e;
+    var value;
+
+    if (bytes == 0) {
+        e = 0;
+        value = 0;
+    } else {
+        e = Math.floor(Math.log(bytes) / Math.log(1024));
+        value = Math.round((bytes / Math.pow(1024, e)) * 100) / 100;
+    };
+
+    return value + ' ' + suffix[e];
+}
+
 $('#disk').highcharts({
     chart: {
         type: 'spline',
@@ -98,6 +115,11 @@ $('#disk').highcharts({
     yAxis: {
         title: {
             text: false
+        },
+        labels: {
+            formatter: function() {
+                return bytesPerSecondLabel(this.value);
+            }
         }
     },
     tooltip: {
@@ -140,6 +162,11 @@ $('#net').highcharts({
     yAxis: {
         title: {
             text: false
+        },
+        labels: {
+            formatter: function() {
+                return bytesPerSecondLabel(this.value);
+            }
         }
     },
     tooltip: {
