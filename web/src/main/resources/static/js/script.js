@@ -101,7 +101,7 @@ $('#disk').highcharts({
         }
     },
     tooltip: {
-        valueSuffix: ' bytes'
+        valueSuffix: ' B/s'
     },
     plotOptions: {
         spline: {
@@ -143,7 +143,7 @@ $('#net').highcharts({
         }
     },
     tooltip: {
-        valueSuffix: ' bytes'
+        valueSuffix: ' B/s'
     },
     plotOptions: {
         spline: {

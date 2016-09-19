@@ -26,16 +26,18 @@ public class SensorConfig {
     public Disk disk(
             @Value("${sensors.disk.file}") final File file,
             @Value("${sensors.disk.device}") final String name,
-            @Value("${sensors.disk.sector}") final short size
+            @Value("${sensors.disk.sector}") final short size,
+            @Value("${monitor.period}") final byte period
     ) {
-        return Disk.byFile(file, name, size);
+        return Disk.byFile(file, name, size, period);
     }
 
     @Bean
     public Net net(
             @Value("${sensors.net.file}") final File file,
-            @Value("${sensors.net.interface}") final String name
+            @Value("${sensors.net.interface}") final String name,
+            @Value("${monitor.period}") final byte period
     ) {
-        return Net.byFile(file, name);
+        return Net.byFile(file, name, period);
     }
 }
