@@ -25,7 +25,8 @@ $('#cpu').highcharts({
         }
     },
     tooltip: {
-        valueSuffix: '%'
+        valueSuffix: '%',
+        shared: true
     },
     plotOptions: {
         spline: {
@@ -63,7 +64,8 @@ $('#mem').highcharts({
         }
     },
     tooltip: {
-        valueSuffix: '%'
+        valueSuffix: '%',
+        shared: true
     },
     plotOptions: {
         spline: {
@@ -100,6 +102,16 @@ function bytesPerSecondLabel(bytes) {
     return value + ' ' + suffix[e];
 }
 
+function pointFormatter(point) {
+    var series = point.series;
+
+    var mark = '<font color="' + series.color + '">●</font>';
+    var name = ' ' + series.name + ': ';
+    var value = '<b>' + bytesPerSecondLabel(point.y) + '</b>';
+
+    return mark + name + value + '<br/>';
+}
+
 $('#disk').highcharts({
     chart: {
         type: 'spline',
@@ -123,7 +135,11 @@ $('#disk').highcharts({
         }
     },
     tooltip: {
-        valueSuffix: ' B/s'
+        pointFormatter: function() {
+            return pointFormatter(this);
+        },
+        useHTML: true,
+        shared: true
     },
     plotOptions: {
         spline: {
@@ -170,7 +186,11 @@ $('#net').highcharts({
         }
     },
     tooltip: {
-        valueSuffix: ' B/s'
+        pointFormatter: function() {
+            return pointFormatter(this);
+        },
+        useHTML: true,
+        shared: true
     },
     plotOptions: {
         spline: {
