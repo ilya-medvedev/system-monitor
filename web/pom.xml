@@ -52,12 +52,12 @@
         <dependency>
             <groupId>org.webjars.npm</groupId>
             <artifactId>google-protobuf</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>closure-library</artifactId>
-            <version>20150412-848686a</version>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>google-closure-library</artifactId>
+            <version>20160911.0.0</version>
         </dependency>
     </dependencies>
 </project>
