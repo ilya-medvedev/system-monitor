@@ -3,13 +3,15 @@ spring:
     enabled: false
 monitor:
   period: 3
+directory:
+  proc: /proc
 sensors:
   cpu:
-    file: /proc/stat
+    file: ${directory.proc}/stat
   mem:
-    file: /proc/meminfo
+    file: ${directory.proc}/meminfo
   disk:
-    file: /proc/diskstats
+    file: ${directory.proc}/diskstats
     sector: 512
   net:
-    file: /proc/net/dev
+    file: ${directory.proc}/net/dev
