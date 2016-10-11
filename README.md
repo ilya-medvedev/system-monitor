@@ -18,7 +18,7 @@ Build
 
 Run
 ---
-    java -jar application/target/application-${version}.jar ${properties}
+    java -jar application/target/application.jar ${properties}
 
 Properties
 ----------
