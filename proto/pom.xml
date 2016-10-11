@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
         </dependency>
     </dependencies>
 
@@ -25,13 +25,14 @@
             <plugin>
                 <groupId>com.github.os72</groupId>
                 <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <protocVersion>3.1.0</protocVersion>
                             <outputTargets>
                                 <outputTarget>
                                     <type>java</type>

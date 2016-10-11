@@ -1,15 +1,13 @@
 package medvedev.ilya.monitor.web.handler;
 
-import akka.actor.ActorSystem;
-import akka.actor.TypedActor;
-import akka.actor.TypedActorExtension;
+import akka.actor.TypedActorFactory;
 import akka.actor.TypedProps;
 import akka.japi.Creator;
 import medvedev.ilya.monitor.protobuf.SensorMessage;
 import medvedev.ilya.monitor.protobuf.SensorMessage.SensorInfo;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.web.sender.WebSocketSender;
-import medvedev.ilya.monitor.web.sender.WebSocketSessionSender;
+import medvedev.ilya.monitor.web.sender.session.WebSocketSessionSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.BinaryMessage;
@@ -18,6 +16,8 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,23 +29,20 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class Handler extends AbstractWebSocketHandler {
+public class Handler extends AbstractWebSocketHandler implements Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
 
-    private static final String UNKNOWN_ERROR = "Unknown error";
-
+    private final TypedActorFactory typedActorFactory;
     private final Sensor[] sensors;
     private final byte period;
-
-    private final ActorSystem actorSystem = ActorSystem.create();
-    private final TypedActorExtension typedActorExtension = TypedActor.get(actorSystem);
 
     private final Map<WebSocketSession, WebSocketSender> sessions = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture scheduledFuture;
 
-    public Handler(final Sensor[] sensors, final byte period) {
+    public Handler(final TypedActorFactory typedActorFactory, final Sensor[] sensors, final byte period) {
+        this.typedActorFactory = typedActorFactory;
         this.sensors = sensors;
         this.period = period;
     }
@@ -80,7 +77,7 @@ public class Handler extends AbstractWebSocketHandler {
         try {
             sendStats();
         } catch (final Exception e) {
-            LOGGER.warn(UNKNOWN_ERROR, e);
+            LOGGER.warn("Unknown error.", e);
         }
     }
 
@@ -118,7 +115,7 @@ public class Handler extends AbstractWebSocketHandler {
         final Creator<WebSocketSender> creator = () -> new WebSocketSessionSender(session);
         final TypedProps<WebSocketSender> typedProps = new TypedProps<>(WebSocketSender.class, creator);
 
-        final WebSocketSender webSocketSender = typedActorExtension.typedActorOf(typedProps);
+        final WebSocketSender webSocketSender = typedActorFactory.typedActorOf(typedProps);
 
         putWebSocketSender(session, webSocketSender);
     }
@@ -127,6 +124,11 @@ public class Handler extends AbstractWebSocketHandler {
     public void afterConnectionClosed(final WebSocketSession session, final CloseStatus status) {
         final WebSocketSender webSocketSender = removeWebSocketSender(session);
 
-        typedActorExtension.stop(webSocketSender);
+        typedActorFactory.stop(webSocketSender);
+    }
+
+    @Override
+    public void close() throws IOException {
+        executorService.shutdown();
     }
 }

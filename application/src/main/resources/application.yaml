@@ -1,6 +1,8 @@
+spring:
+  jmx:
+    enabled: false
 monitor:
   period: 3
-
 sensors:
   cpu:
     file: /proc/stat
@@ -8,5 +10,6 @@ sensors:
     file: /proc/meminfo
   disk:
     file: /proc/diskstats
+    sector: 512
   net:
     file: /proc/net/dev
