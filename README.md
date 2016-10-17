@@ -22,10 +22,10 @@ Run
 
 Properties
 ----------
-|    Property     | Required |                                                Description                                                 |
-|:---------------:|:--------:|:----------------------------------------------------------------------------------------------------------:|
-|  --disk.device  |   True   | Device name (See [/proc/diskstats](https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats)) |
-| --net.interface |   True   |                                       Interface (See /proc/net/dev)                                        |
+|        Property         | Required |                                                Description                                                 |
+|:-----------------------:|:--------:|:----------------------------------------------------------------------------------------------------------:|
+|  --sensors.disk.device  |   True   | Device name (See [/proc/diskstats](https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats)) |
+| --sensors.net.interface |   True   |                                       Interface (See /proc/net/dev)                                        |
 
 See:
 1. [Spring Boot Externalized Configuration](http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html)
