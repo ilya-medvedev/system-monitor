@@ -1,4 +1,4 @@
-var socket = new WebSocket('ws://' + location.host + '/ws');
+var socket = new WebSocket('ws' + location.protocol.replace('http', '') + '//' + location.host + '/ws');
 socket.binaryType = 'arraybuffer';
 
 Highcharts.setOptions({
