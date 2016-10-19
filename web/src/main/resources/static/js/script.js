@@ -1,6 +1,3 @@
-var socket = new WebSocket('ws' + location.protocol.replace('http', '') + '//' + location.host + '/ws');
-socket.binaryType = 'arraybuffer';
-
 Highcharts.setOptions({
     global: {
         useUTC: false
@@ -214,17 +211,23 @@ $('#net').highcharts({
     ]
 });
 
-var charts = {
-    cpu: $('#cpu').highcharts(),
-    mem: $('#mem').highcharts(),
-    disk: $('#disk').highcharts(),
-    net: $('#net').highcharts()
-};
-
-goog.require('proto.SensorMessage');
-
 $(function() {
-    socket.onmessage = function(message) {
+    goog.require('proto.SensorMessage');
+
+    var charts = {
+        cpu: $('#cpu').highcharts(),
+        mem: $('#mem').highcharts(),
+        disk: $('#disk').highcharts(),
+        net: $('#net').highcharts()
+    };
+
+    var protocol = location.protocol.replace('http', 'ws');
+    var url = protocol + '//' + location.host + '/ws';
+    var ws = new WebSocket(url);
+
+    ws.binaryType = "arraybuffer";
+
+    ws.onmessage = function(message) {
         var sensorMessage = proto.SensorMessage.deserializeBinary(message.data);
 
         var value = sensorMessage.getValueList();
