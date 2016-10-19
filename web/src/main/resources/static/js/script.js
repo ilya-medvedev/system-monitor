@@ -1,9 +1,3 @@
-Highcharts.setOptions({
-    global: {
-        useUTC: false
-    }
-});
-
 $('#cpu').highcharts({
     chart: {
         type: 'spline',
@@ -211,56 +205,54 @@ $('#net').highcharts({
     ]
 });
 
-$(function() {
-    goog.require('proto.SensorMessage');
+function onMessage(message) {
+    var sensorMessage = proto.SensorMessage.deserializeBinary(message.data);
+    var value = sensorMessage.getValueList();
 
-    var charts = {
-        cpu: $('#cpu').highcharts(),
-        mem: $('#mem').highcharts(),
-        disk: $('#disk').highcharts(),
-        net: $('#net').highcharts()
-    };
+    $.each(value, function(index, sensorInfo) {
+        var name = sensorInfo.getName();
+        var div = '#' + name;
+        var chart = $(div).highcharts();
+        var value = sensorInfo.getValueList();
+
+        $.each(value, function(index, sensorValue) {
+            var name = sensorValue.getName();
+            var series = chart.get(name);
+            var time = sensorMessage.getTime();
+            var value = sensorValue.getValue()
+            var point = [time, value];
+
+            if (series == null) {
+                chart.addSeries({
+                    id: name,
+                    name: name,
+                    data: [point],
+                    visible: false
+                }, false);
+            } else {
+                var shift = series.xData.length > 20;
+
+                series.addPoint(point, false, shift);
+            }
+        });
+
+        chart.redraw();
+    });
+}
+
+$(function() {
+    Highcharts.setOptions({
+        global: {
+            useUTC: false
+        }
+    });
+
+    goog.require('proto.SensorMessage');
 
     var protocol = location.protocol.replace('http', 'ws');
     var url = protocol + '//' + location.host + '/ws';
     var ws = new WebSocket(url);
 
     ws.binaryType = "arraybuffer";
-
-    ws.onmessage = function(message) {
-        var sensorMessage = proto.SensorMessage.deserializeBinary(message.data);
-
-        var value = sensorMessage.getValueList();
-
-        $.each(value, function(index, sensorInfo) {
-            var name = sensorInfo.getName();
-
-            var chart = charts[name];
-
-            var value = sensorInfo.getValueList();
-
-            $.each(value, function(index, sensorValue) {
-                var name = sensorValue.getName();
-                var series = chart.get(name);
-                var time = sensorMessage.getTime();
-                var value = sensorValue.getValue()
-                var point = [time, value];
-
-                if (series == null) {
-                    chart.addSeries({
-                        id: name,
-                        name: name,
-                        data: [point],
-                        visible: false
-                    }, false);
-                } else {
-                    var shift = series.xData.length > 20;
-
-                    series.addPoint(point, false, shift);
-                }
-            });
-
-            chart.redraw();
-        });
-    };
+    ws.onmessage = onMessage;
 });
