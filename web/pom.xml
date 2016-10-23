@@ -12,10 +12,6 @@
 
     <artifactId>web</artifactId>
 
-    <properties>
-        <akka.version>2.4.7</akka.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -36,7 +32,7 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_2.11</artifactId>
-            <version>${akka.version}</version>
+            <version>2.4.7</version>
         </dependency>
 
         <dependency>
@@ -60,4 +56,29 @@
             <version>20160911.0.0</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.samaxes.maven</groupId>
+                <artifactId>minify-maven-plugin</artifactId>
+                <version>1.7.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <webappSourceDir>${project.build.sourceDirectory}/../</webappSourceDir>
+                    <jsSourceFiles>
+                        <jsSourceFile>script.js</jsSourceFile>
+                    </jsSourceFiles>
+                    <webappTargetDir>${project.build.outputDirectory}/static/</webappTargetDir>
+                    <jsFinalFile>chart.js</jsFinalFile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
