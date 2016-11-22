@@ -12,11 +12,15 @@
 
     <artifactId>proto</artifactId>
 
+    <properties>
+        <protobuf.version>3.1.0</protobuf.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.1.0</version>
+            <version>${protobuf.version}</version>
         </dependency>
     </dependencies>
 
@@ -25,14 +29,14 @@
             <plugin>
                 <groupId>com.github.os72</groupId>
                 <artifactId>protoc-jar-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>${protobuf.version}</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <protocVersion>3.1.0</protocVersion>
+                            <protocVersion>${protobuf.version}</protocVersion>
                             <outputTargets>
                                 <outputTarget>
                                     <type>java</type>
@@ -40,12 +44,32 @@
                                 <outputTarget>
                                     <type>js</type>
                                     <outputOptions>binary</outputOptions>
-                                    <outputDirectory>${project.build.outputDirectory}/static/js</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/protobuf/js</outputDirectory>
                                 </outputTarget>
                             </outputTargets>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.samaxes.maven</groupId>
+                <artifactId>minify-maven-plugin</artifactId>
+                <version>1.7.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <webappSourceDir>${project.build.directory}/protobuf</webappSourceDir>
+                    <jsSourceFiles>
+                        <jsSourceFile>sensormessage.js</jsSourceFile>
+                    </jsSourceFiles>
+                    <webappTargetDir>${project.build.outputDirectory}/static/</webappTargetDir>
+                    <jsFinalFile>proto.js</jsFinalFile>
+                </configuration>
             </plugin>
         </plugins>
     </build>

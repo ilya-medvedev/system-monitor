@@ -1,7 +1,7 @@
 $('#cpu').highcharts({
     chart: {
         type: 'spline',
-        animation: Highcharts.svg,
+        animation: Highcharts.svg
     },
     title: {
         text: 'CPU'
@@ -40,7 +40,7 @@ $('#cpu').highcharts({
 $('#mem').highcharts({
     chart: {
         type: 'spline',
-        animation: Highcharts.svg,
+        animation: Highcharts.svg
     },
     title: {
         text: 'Memory'
@@ -106,7 +106,7 @@ function pointFormatter(point) {
 $('#disk').highcharts({
     chart: {
         type: 'spline',
-        animation: Highcharts.svg,
+        animation: Highcharts.svg
     },
     title: {
         text: 'Disk'
@@ -157,7 +157,7 @@ $('#disk').highcharts({
 $('#net').highcharts({
     chart: {
         type: 'spline',
-        animation: Highcharts.svg,
+        animation: Highcharts.svg
     },
     title: {
         text: 'Network'
