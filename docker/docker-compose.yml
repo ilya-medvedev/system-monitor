@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  application:
+    build: ../application
+    volumes:
+      - ./application/config:/opt/system-monitor/config
+    ports:
+      - "8080:8080"
