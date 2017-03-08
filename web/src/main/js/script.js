@@ -8,10 +8,12 @@ const xAxis = {
     maxZoom: 60000
 };
 
+const titleWithoutText = {
+    text: false
+};
+
 const yAxisWithoutTitle = {
-    title: {
-        text: false
-    }
+    title: titleWithoutText
 };
 
 const sharedPercentTooltip = {
@@ -80,10 +82,8 @@ function bytesPerSecondLabel(bytes) {
     return value + ' ' + suffix[e];
 }
 
-var bytesYAxis = {
-    title: {
-        text: false
-    },
+const bytesYAxis = {
+    title: titleWithoutText,
     labels: {
         formatter: function() {
             return bytesPerSecondLabel(this.value);
@@ -101,7 +101,7 @@ function pointFormatter(point) {
     return mark + name + value + '<br/>';
 }
 
-var bytesTooltip = {
+const bytesTooltip = {
     pointFormatter: function() {
         return pointFormatter(this);
     },
@@ -197,9 +197,9 @@ $(function() {
 
     goog.require('proto.SensorMessage');
 
-    var protocol = location.protocol.replace('http', 'ws');
-    var url = protocol + '//' + location.host + '/ws';
-    var ws = new WebSocket(url);
+    const protocol = location.protocol.replace('http', 'ws');
+    const url = protocol + '//' + location.host + '/ws';
+    const ws = new WebSocket(url);
 
     ws.binaryType = "arraybuffer";
     ws.onmessage = onMessage;
