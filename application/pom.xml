@@ -12,6 +12,10 @@
 
     <artifactId>application</artifactId>
 
+    <properties>
+        <docker.path>/opt/${project.build.finalName}/</docker.path>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -21,12 +25,32 @@
     </dependencies>
 
     <build>
+        <finalName>system-monitor</finalName>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <executable>true</executable>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.13</version>
+                <configuration>
+                    <imageName>${project.build.finalName}</imageName>
+                    <baseImage>openjdk:8-jre</baseImage>
+                    <entryPoint>["${docker.path}${project.build.finalName}.jar"]</entryPoint>
+                    <resources>
+                        <resource>
+                            <targetPath>${docker.path}</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
                 </configuration>
             </plugin>
         </plugins>
