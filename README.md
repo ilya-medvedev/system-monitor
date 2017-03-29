@@ -27,7 +27,7 @@ Real-time monitoring tool
     mvn -pl application docker:build
 
 #### Run Docker Container
-    docker run -d \
+    docker run -i -t --rm \
                --name system-monitor \
                -v `pwd`/application/docker:/opt/system-monitor/config:ro \
                -p 8080:8080 \
