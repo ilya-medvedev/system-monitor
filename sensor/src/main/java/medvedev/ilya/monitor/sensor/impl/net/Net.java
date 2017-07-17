@@ -1,13 +1,15 @@
 package medvedev.ilya.monitor.sensor.impl.net;
 
-import medvedev.ilya.monitor.protobuf.SensorMessage.SensorInfo;
-import medvedev.ilya.monitor.protobuf.SensorMessage.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
+import medvedev.ilya.monitor.sensor.SensorInfo;
+import medvedev.ilya.monitor.sensor.SensorValue;
 import medvedev.ilya.monitor.sensor.impl.exception.SensorFileNotFound;
 import medvedev.ilya.monitor.sensor.impl.exception.WrongSensorFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Net implements Sensor {
@@ -140,16 +142,19 @@ public class Net implements Sensor {
         final float receiveValue = ((float) (receive - preReceive)) / period;
         final float transmitValue = ((float) (transmit - preTransmit)) / period;
 
-        return SensorInfo.newBuilder()
+        final SensorValue downSensorValue = new SensorValue.Builder()
+                .setName("down")
+                .setValue(receiveValue)
+                .build();
+        final SensorValue upSensorValue = new SensorValue.Builder()
+                .setName("up")
+                .setValue(transmitValue)
+                .build();
+        final List<SensorValue> sensorValues = Arrays.asList(downSensorValue, upSensorValue);
+
+        return new SensorInfo.Builder()
                 .setName("net")
-                .addValue(SensorValue.newBuilder()
-                        .setName("down")
-                        .setValue(receiveValue)
-                        .build())
-                .addValue(SensorValue.newBuilder()
-                        .setName("up")
-                        .setValue(transmitValue)
-                        .build())
+                .setValues(sensorValues)
                 .build();
     }
 

@@ -154,21 +154,16 @@ $('#net').highcharts({
 });
 
 function onMessage(message) {
-    const sensorMessage = proto.SensorMessage.deserializeBinary(message.data);
-    const value = sensorMessage.getValueList();
+    const sensorMessage = JSON.parse(message.data);
 
-    $.each(value, function(index, sensorInfo) {
-        const name = sensorInfo.getName();
-        const div = '#' + name;
+    $.each(sensorMessage.values, function(index, sensorInfo) {
+        const div = '#' + sensorInfo.name;
         const chart = $(div).highcharts();
-        const value = sensorInfo.getValueList();
 
-        $.each(value, function(index, sensorValue) {
-            const name = sensorValue.getName();
+        $.each(sensorInfo.values, function(index, sensorValue) {
+            const name = sensorValue.name;
             const series = chart.get(name);
-            const time = sensorMessage.getTime();
-            const value = sensorValue.getValue();
-            const point = [time, value];
+            const point = [sensorMessage.time, sensorValue.value];
 
             if (series === null) {
                 chart.addSeries({
@@ -195,12 +190,7 @@ $(function() {
         }
     });
 
-    goog.require('proto.SensorMessage');
+    const eventSource = new EventSource("sensors");
 
-    const protocol = location.protocol.replace('http', 'ws');
-    const url = protocol + '//' + location.host + '/ws';
-    const ws = new WebSocket(url);
-
-    ws.binaryType = "arraybuffer";
-    ws.onmessage = onMessage;
+    eventSource.onmessage = onMessage;
 });

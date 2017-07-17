@@ -1,14 +1,16 @@
 package medvedev.ilya.monitor.sensor.impl.mem;
 
-import medvedev.ilya.monitor.protobuf.SensorMessage.SensorInfo;
-import medvedev.ilya.monitor.protobuf.SensorMessage.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
+import medvedev.ilya.monitor.sensor.SensorInfo;
+import medvedev.ilya.monitor.sensor.SensorValue;
 import medvedev.ilya.monitor.sensor.impl.exception.SensorFileNotFound;
 import medvedev.ilya.monitor.sensor.impl.exception.WrongSensorFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -129,11 +131,11 @@ public class Mem implements Sensor {
 
         final SensorValue mem = calculateValue("mem", memTotal, memFree);
         final SensorValue swap = calculateValue("swap", swapTotal, swapFree);
+        final List<SensorValue> sensorValues = Arrays.asList(mem, swap);
 
-        return SensorInfo.newBuilder()
+        return new SensorInfo.Builder()
                 .setName("mem")
-                .addValue(mem)
-                .addValue(swap)
+                .setValues(sensorValues)
                 .build();
     }
 
@@ -142,7 +144,7 @@ public class Mem implements Sensor {
 
         final float value = 100.0F * used / total;
 
-        return SensorValue.newBuilder()
+        return new SensorValue.Builder()
                 .setName(name)
                 .setValue(value)
                 .build();

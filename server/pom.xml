@@ -7,10 +7,10 @@
     <parent>
         <groupId>medvedev.ilya.monitor</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>application</artifactId>
+    <artifactId>server</artifactId>
 
     <properties>
         <docker.path>/opt/${project.build.finalName}/</docker.path>
@@ -18,8 +18,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sensor</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -42,13 +52,18 @@
                 <version>0.4.13</version>
                 <configuration>
                     <imageName>${project.build.finalName}</imageName>
-                    <baseImage>openjdk:8-jre</baseImage>
+                    <baseImage>openjdk:9-jre</baseImage>
                     <entryPoint>["${docker.path}${project.build.finalName}.jar"]</entryPoint>
                     <resources>
                         <resource>
                             <targetPath>${docker.path}</targetPath>
                             <directory>${project.build.directory}</directory>
                             <include>${project.build.finalName}.jar</include>
+                        </resource>
+                        <resource>
+                            <targetPath>${docker.path}/config</targetPath>
+                            <directory>${project.basedir}/docker</directory>
+                            <include>application.yaml</include>
                         </resource>
                     </resources>
                 </configuration>

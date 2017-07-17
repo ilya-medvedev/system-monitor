@@ -7,34 +7,12 @@
     <parent>
         <groupId>medvedev.ilya.monitor</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>web</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sensor</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>proto</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_2.11</artifactId>
-            <version>2.4.7</version>
-        </dependency>
-
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>bootstrap</artifactId>
@@ -44,16 +22,6 @@
             <groupId>org.webjars</groupId>
             <artifactId>highcharts</artifactId>
             <version>4.2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>google-protobuf</artifactId>
-            <version>3.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>google-closure-library</artifactId>
-            <version>20160911.0.0</version>
         </dependency>
     </dependencies>
 
@@ -71,7 +39,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <webappSourceDir>${project.build.sourceDirectory}/../</webappSourceDir>
+                    <webappSourceDir>${project.basedir}/src/main</webappSourceDir>
                     <jsSourceFiles>
                         <jsSourceFile>script.js</jsSourceFile>
                     </jsSourceFiles>

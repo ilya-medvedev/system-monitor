@@ -16,7 +16,7 @@ Real-time monitoring tool
     mvn clean package
 
 ### Run
-    java -jar application/target/system-monitor.jar ${properties}
+    java -jar server/target/system-monitor.jar ${properties}
 
 ### Run Docker Container
 
@@ -24,12 +24,11 @@ Real-time monitoring tool
 1. [Install Docker](https://docs.docker.com/engine/installation/)
 
 #### Build Docker Image
-    mvn -pl application docker:build
+    mvn -pl server docker:build
 
 #### Run Docker Container
     docker run -i -t --rm \
                --name system-monitor \
-               -v `pwd`/application/docker:/opt/system-monitor/config:ro \
                -p 8080:8080 \
                system-monitor ${properties}
 

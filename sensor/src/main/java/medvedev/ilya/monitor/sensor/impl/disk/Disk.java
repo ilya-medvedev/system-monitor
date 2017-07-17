@@ -1,13 +1,15 @@
 package medvedev.ilya.monitor.sensor.impl.disk;
 
-import medvedev.ilya.monitor.protobuf.SensorMessage.SensorInfo;
-import medvedev.ilya.monitor.protobuf.SensorMessage.SensorInfo.SensorValue;
 import medvedev.ilya.monitor.sensor.Sensor;
+import medvedev.ilya.monitor.sensor.SensorInfo;
+import medvedev.ilya.monitor.sensor.SensorValue;
 import medvedev.ilya.monitor.sensor.impl.exception.SensorFileNotFound;
 import medvedev.ilya.monitor.sensor.impl.exception.WrongSensorFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Disk implements Sensor {
@@ -102,16 +104,19 @@ public class Disk implements Sensor {
         final float readValue = (read - preRead) * rate;
         final float writenValue = (written - preWriten) * rate;
 
-        return SensorInfo.newBuilder()
+        final SensorValue readSensorValue = new SensorValue.Builder()
+                .setName("read")
+                .setValue(readValue)
+                .build();
+        final SensorValue writeSensorValue = new SensorValue.Builder()
+                .setName("write")
+                .setValue(writenValue)
+                .build();
+        final List<SensorValue> sensorValues = Arrays.asList(readSensorValue, writeSensorValue);
+
+        return new SensorInfo.Builder()
                 .setName("disk")
-                .addValue(SensorValue.newBuilder()
-                        .setName("read")
-                        .setValue(readValue)
-                        .build())
-                .addValue(SensorValue.newBuilder()
-                        .setName("write")
-                        .setValue(writenValue)
-                        .build())
+                .setValues(sensorValues)
                 .build();
     }
 
