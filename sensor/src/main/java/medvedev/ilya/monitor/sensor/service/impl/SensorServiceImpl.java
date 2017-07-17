@@ -33,7 +33,7 @@ public class SensorServiceImpl implements SensorService {
                 .build();
     }
 
-    public synchronized void clear() {
+    public synchronized void cleanup() {
         Arrays.stream(sensors)
                 .parallel()
                 .unordered()

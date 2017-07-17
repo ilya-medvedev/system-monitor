@@ -57,14 +57,12 @@ public class SensorConfig {
             final SensorService sensorService,
             @Value("${monitor.period}") final byte period
     ) {
-        return Flux.<SensorMessage>generate(sink -> {
-            final SensorMessage sensorMessage = sensorService.currentValue();
+        final Duration duration = Duration.ofSeconds(period);
 
-            sink.next(sensorMessage);
-        })
-                .delayElements(Duration.ofSeconds(period))
-                .doOnCancel(sensorService::clear)
+        return Flux.interval(duration)
 //                .log()
+                .map(i -> sensorService.currentValue())
+                .doOnCancel(sensorService::cleanup)
                 .share();
     }
 }

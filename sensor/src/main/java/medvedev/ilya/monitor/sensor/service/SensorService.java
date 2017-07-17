@@ -5,5 +5,5 @@ import medvedev.ilya.monitor.sensor.SensorMessage;
 public interface SensorService {
     SensorMessage currentValue();
 
-    void clear();
+    void cleanup();
 }
