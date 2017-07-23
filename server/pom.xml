@@ -52,13 +52,18 @@
                 <version>0.4.13</version>
                 <configuration>
                     <imageName>${project.build.finalName}</imageName>
-                    <baseImage>openjdk:9-jre</baseImage>
+                    <baseImage>openjdk:8u131-jre</baseImage>
                     <entryPoint>["${docker.path}${project.build.finalName}.jar"]</entryPoint>
                     <resources>
                         <resource>
                             <targetPath>${docker.path}</targetPath>
                             <directory>${project.build.directory}</directory>
                             <include>${project.build.finalName}.jar</include>
+                        </resource>
+                        <resource>
+                            <targetPath>${docker.path}</targetPath>
+                            <directory>${project.basedir}/docker</directory>
+                            <include>${project.build.finalName}.conf</include>
                         </resource>
                         <resource>
                             <targetPath>${docker.path}/config</targetPath>
