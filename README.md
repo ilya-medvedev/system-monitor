@@ -36,10 +36,10 @@ Real-time monitoring tool
 1. [Docker run reference](https://docs.docker.com/engine/reference/run/)
 
 ### Properties
-|        Property         |                                                Description                                                 |
-|:-----------------------:|:----------------------------------------------------------------------------------------------------------:|
-|  --sensors.disk.device  | Device name (See [/proc/diskstats](https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats)) |
-| --sensors.net.interface |                                       Interface (See /proc/net/dev)                                        |
+|          Property           |                                                Description                                                 |
+|:---------------------------:|:----------------------------------------------------------------------------------------------------------:|
+|  --sensor.disk.device-name  | Device name (See [/proc/diskstats](https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats)) |
+| --sensor.net.interface-name |                                       Interface (See /proc/net/dev)                                        |
 
 #### Links:
 1. [Spring Boot Externalized Configuration](http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html)

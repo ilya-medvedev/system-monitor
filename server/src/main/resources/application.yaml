@@ -5,13 +5,13 @@ monitor:
   period: 3
 directory:
   proc: /proc
-sensors:
+sensor:
   cpu:
     file: ${directory.proc}/stat
   mem:
     file: ${directory.proc}/meminfo
   disk:
     file: ${directory.proc}/diskstats
-    sector: 512
+    sector-size: 512
   net:
     file: ${directory.proc}/net/dev
