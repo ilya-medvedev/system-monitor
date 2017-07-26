@@ -30,6 +30,8 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @SpringBootApplication
 @EnableConfigurationProperties(SensorProperties.class)
@@ -77,19 +79,33 @@ public class Application {
     }
 
     private HandlerFunction<ServerResponse> sensorHandler(final byte period, final SensorProperties sensorProperties) {
-        final CpuProperties cpuProperties = sensorProperties.getCpu();
-        final Sensor cpuSensor = cpuSensor(cpuProperties);
+        final Sensor[] sensors = Stream.<Supplier<Sensor>>of(
+                () -> {
+                    final CpuProperties cpuProperties = sensorProperties.getCpu();
 
-        final MemProperties memProperties = sensorProperties.getMem();
-        final Sensor memSensor = memSensor(memProperties);
+                    return cpuSensor(cpuProperties);
+                },
+                () -> {
+                    final MemProperties memProperties = sensorProperties.getMem();
 
-        final DiskProperties diskProperties = sensorProperties.getDisk();
-        final Sensor diskSensor = diskSensor(diskProperties, period);
+                    return memSensor(memProperties);
+                },
+                () -> {
+                    final DiskProperties diskProperties = sensorProperties.getDisk();
 
-        final NetProperties netProperties = sensorProperties.getNet();
-        final Sensor netSensor = netSensor(netProperties, period);
+                    return diskSensor(diskProperties, period);
+                },
+                () -> {
+                    final NetProperties netProperties = sensorProperties.getNet();
 
-        final Sensor[] sensors = {cpuSensor, memSensor, diskSensor, netSensor};
+                    return netSensor(netProperties, period);
+                }
+        )
+                .parallel()
+                .unordered()
+                .map(Supplier::get)
+                .toArray(Sensor[]::new);
+
         final SensorService sensorService = new SensorServiceImpl(sensors);
 
         final Duration duration = Duration.ofSeconds(period);
