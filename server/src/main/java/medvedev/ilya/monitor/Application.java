@@ -30,7 +30,9 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SpringBootApplication
@@ -52,7 +54,7 @@ public class Application {
     }
 
     private HandlerFunction<ServerResponse> sensorHandler(final byte period, final SensorProperties sensorProperties) {
-        final Sensor[] sensors = Stream.<Supplier<Sensor>>of(
+        final List<Sensor> sensors = Stream.<Supplier<Sensor>>of(
                 () -> {
                     final CpuProperties properties = sensorProperties.getCpu();
                     final File file = properties.getFile();
@@ -84,7 +86,7 @@ public class Application {
                 .parallel()
                 .unordered()
                 .map(Supplier::get)
-                .toArray(Sensor[]::new);
+                .collect(Collectors.toList());
 
         final SensorService sensorService = new SensorServiceImpl(sensors);
 
