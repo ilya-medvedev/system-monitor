@@ -51,54 +51,34 @@ public class Application {
         return request -> indexResponse;
     }
 
-    private Sensor cpuSensor(final CpuProperties properties) {
-        final File file = properties.getFile();
-
-        return Cpu.byFile(file);
-    }
-
-    private Sensor memSensor(final MemProperties properties) {
-        final File file = properties.getFile();
-
-        return Mem.byFile(file);
-    }
-
-    private Sensor diskSensor(final DiskProperties diskProperties, final byte period) {
-        final File file = diskProperties.getFile();
-        final String deviceName = diskProperties.getDeviceName();
-        final short sectorSize = diskProperties.getSectorSize();
-
-        return Disk.byFile(file, deviceName, sectorSize, period);
-    }
-
-    private Sensor netSensor(final NetProperties properties, final byte period) {
-        final File file = properties.getFile();
-        final String interfaceName = properties.getInterfaceName();
-
-        return Net.byFile(file, interfaceName, period);
-    }
-
     private HandlerFunction<ServerResponse> sensorHandler(final byte period, final SensorProperties sensorProperties) {
         final Sensor[] sensors = Stream.<Supplier<Sensor>>of(
                 () -> {
-                    final CpuProperties cpuProperties = sensorProperties.getCpu();
+                    final CpuProperties properties = sensorProperties.getCpu();
+                    final File file = properties.getFile();
 
-                    return cpuSensor(cpuProperties);
+                    return Cpu.byFile(file);
                 },
                 () -> {
-                    final MemProperties memProperties = sensorProperties.getMem();
+                    final MemProperties properties = sensorProperties.getMem();
+                    final File file = properties.getFile();
 
-                    return memSensor(memProperties);
+                    return Mem.byFile(file);
                 },
                 () -> {
-                    final DiskProperties diskProperties = sensorProperties.getDisk();
+                    final DiskProperties properties = sensorProperties.getDisk();
+                    final File file = properties.getFile();
+                    final String deviceName = properties.getDeviceName();
+                    final short sectorSize = properties.getSectorSize();
 
-                    return diskSensor(diskProperties, period);
+                    return Disk.byFile(file, deviceName, sectorSize, period);
                 },
                 () -> {
-                    final NetProperties netProperties = sensorProperties.getNet();
+                    final NetProperties properties = sensorProperties.getNet();
+                    final File file = properties.getFile();
+                    final String interfaceName = properties.getInterfaceName();
 
-                    return netSensor(netProperties, period);
+                    return Net.byFile(file, interfaceName, period);
                 }
         )
                 .parallel()
