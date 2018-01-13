@@ -19,6 +19,7 @@
         <module>sensor</module>
         <module>web</module>
         <module>server</module>
+        <module>util</module>
     </modules>
 
     <repositories>
