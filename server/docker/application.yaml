@@ -1,5 +1,0 @@
-sensor:
-  disk:
-    device-name: vda
-  net:
-    interface-name: eth0

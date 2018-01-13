@@ -14,6 +14,7 @@
 
     <properties>
         <docker.path>/opt/${project.build.finalName}/</docker.path>
+        <docker.file>${project.build.finalName}.jar</docker.file>
     </properties>
 
     <dependencies>
@@ -54,26 +55,21 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.13</version>
+                <version>1.0.0</version>
                 <configuration>
                     <imageName>${project.build.finalName}</imageName>
-                    <baseImage>openjdk:8u131-jre</baseImage>
-                    <entryPoint>["${docker.path}${project.build.finalName}.jar"]</entryPoint>
+                    <baseImage>openjdk:8u151-jre</baseImage>
+                    <entryPoint>["${docker.path}${docker.file}"]</entryPoint>
                     <resources>
                         <resource>
                             <targetPath>${docker.path}</targetPath>
                             <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
+                            <include>${docker.file}</include>
                         </resource>
                         <resource>
                             <targetPath>${docker.path}</targetPath>
                             <directory>${project.basedir}/docker</directory>
                             <include>${project.build.finalName}.conf</include>
-                        </resource>
-                        <resource>
-                            <targetPath>${docker.path}/config</targetPath>
-                            <directory>${project.basedir}/docker</directory>
-                            <include>application.yaml</include>
                         </resource>
                     </resources>
                 </configuration>

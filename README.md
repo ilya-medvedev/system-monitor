@@ -36,10 +36,11 @@ Real-time monitoring tool
 1. [Docker run reference](https://docs.docker.com/engine/reference/run/)
 
 ### Properties
-|          Property           |                                                Description                                                 |
-|:---------------------------:|:----------------------------------------------------------------------------------------------------------:|
-|  --sensor.disk.device-name  | Device name (See [/proc/diskstats](https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats)) |
-| --sensor.net.interface-name |                                       Interface (See /proc/net/dev)                                        |
+|          Property           | Default |
+|:---------------------------:|:-------:|
+|  --sensor.disk.device-name  |  sda    |
+|  --sensor.disk.sector-size  |  512    |
+| --sensor.net.interface-name |  eth0   |
 
 #### Links:
 1. [Spring Boot Externalized Configuration](http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html)

@@ -12,6 +12,8 @@ sensor:
     file: ${directory.proc}/meminfo
   disk:
     file: ${directory.proc}/diskstats
+    device-name: sda
     sector-size: 512
   net:
     file: ${directory.proc}/net/dev
+    interface-name: eth0
