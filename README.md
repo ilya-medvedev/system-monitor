@@ -7,7 +7,7 @@ Real-time monitoring tool
 2. Java Standard Edition Development Kit 8 ([Oracle](http://www.oracle.com/technetwork/java/javase/downloads/index.html) or [OpenJDK](http://openjdk.java.net/install/))
 3. [Maven](https://maven.apache.org/download.cgi) 3
 ### Download
-    git clone git@github.com:ilya-medvedev/system-monitor.git
+    git clone git@github.com:imedvedko/system-monitor.git
 ### Change directory
     cd system-monitor
 ### Build
