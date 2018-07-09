@@ -11,7 +11,7 @@ Real-time monitoring tool
 ### Change directory
     cd system-monitor
 ### Build
-    mvn -P !docker clean package
+    mvn clean package
 ### Run
     java -jar modules/server/target/system-monitor.jar ${properties}
 ### Run Docker Container
@@ -19,17 +19,32 @@ Real-time monitoring tool
 1. [Docker](https://docs.docker.com/install/)
 
 #### Build Docker Image
-    mvn -pl modules/server docker:build
+    mvn -P docker -pl modules/server docker:build
 
 #### Run Docker Container
     docker run -i -t --rm \
                --name system-monitor \
                --publish 8080:8080 \
+               --publish 5005:5005 \
                --memory 128M \
                system-monitor ${properties}
 
 ##### Links
 1. [Docker run reference](https://docs.docker.com/engine/reference/run/)
+
+#### Remote Debug
+1. Open "Run/Debug Configurations" Window in [IntelliJ IDEA](https://www.jetbrains.com/idea/) (Run -> Edit Configurations...)
+2. Click "+" to Add New Configuration
+3. Select "Remote"
+4. Configure [Remote Debug](https://www.jetbrains.com/help/idea/run-debug-configuration-remote-debug.html) with these parameters
+5. Click "OK" to save
+6. Run Debug (Run -> Debug...)
+
+|     Item      | Value  |
+|:-------------:|:------:|
+| Debugger mode | Attach |
+|     Host      |  Port  |
+|     Port      |  5005  |
 
 ### Properties
 |          Property           | Default Value |

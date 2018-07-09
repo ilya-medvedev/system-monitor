@@ -48,10 +48,6 @@
         <profile>
             <id>docker</id>
 
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-
             <build>
                 <plugins>
                     <plugin>
