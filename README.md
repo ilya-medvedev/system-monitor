@@ -40,11 +40,11 @@ Real-time monitoring tool
 5. Click "OK" to save
 6. Run Debug (Run -> Debug...)
 
-|     Item      | Value  |
-|:-------------:|:------:|
-| Debugger mode | Attach |
-|     Host      |  Port  |
-|     Port      |  5005  |
+|     Item      |   Value   |
+|:-------------:|:---------:|
+| Debugger mode |  Attach   |
+|     Host      | localhost |
+|     Port      |   5005    |
 
 ### Properties
 |          Property           | Default Value |
