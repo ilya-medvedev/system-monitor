@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  server:
+    image: openjdk:8-jre-slim
+    container_name: system-monitor-server
+    command: "/opt/system-monitor/system-monitor"
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./../modules/server/target/server.jar:/opt/system-monitor/system-monitor
+      - ./server.conf:/opt/system-monitor/system-monitor.conf
+
+  web:
+    image: openjdk:8-jre-slim
+    container_name: system-monitor-web
+    command: "/opt/system-monitor/system-monitor"
+    depends_on:
+      - server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./../modules/web/target/web.jar:/opt/system-monitor/system-monitor
+      - ./web.conf:/opt/system-monitor/system-monitor.conf
+      - ./web.yml:/opt/system-monitor/config/application.yml

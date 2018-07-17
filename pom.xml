@@ -23,8 +23,7 @@
     </modules>
 
     <properties>
-        <docker.path>/opt/${project.build.finalName}/</docker.path>
-        <docker.file>${project.build.finalName}.jar</docker.file>
+        <maven.test.skip>true</maven.test.skip>
     </properties>
 
     <dependencyManagement>
@@ -66,6 +65,8 @@
     </dependencyManagement>
 
     <build>
+        <finalName>${project.artifactId}</finalName>
+
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -73,29 +74,6 @@
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <configuration>
                         <executable>true</executable>
-                    </configuration>
-                </plugin>
-                <!--docker-->
-                <plugin>
-                    <groupId>com.spotify</groupId>
-                    <artifactId>docker-maven-plugin</artifactId>
-                    <version>1.1.1</version>
-                    <configuration>
-                        <imageName>${project.build.finalName}</imageName>
-                        <baseImage>openjdk:8u171-jre-slim</baseImage>
-                        <entryPoint>["${docker.path}${docker.file}"]</entryPoint>
-                        <resources>
-                            <resource>
-                                <targetPath>${docker.path}</targetPath>
-                                <directory>${project.build.directory}</directory>
-                                <include>${docker.file}</include>
-                            </resource>
-                            <resource>
-                                <targetPath>${docker.path}</targetPath>
-                                <directory>${project.basedir}/docker</directory>
-                                <include>${project.build.finalName}.conf</include>
-                            </resource>
-                        </resources>
                     </configuration>
                 </plugin>
             </plugins>

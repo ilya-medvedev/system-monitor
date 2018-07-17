@@ -1,4 +1,4 @@
-package medvedev.ilya.monitor.config;
+package medvedev.ilya.monitor.web.config;
 
 import medvedev.ilya.monitor.util.StringUtils;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +9,7 @@ import org.springframework.web.server.WebFilter;
 import java.util.Objects;
 
 @Configuration
-public class IndexFilterConfig {
+public class FilterConfig {
     @Bean
     public WebFilter indexFilter() {
         return (exchange, chain) -> {
@@ -17,7 +17,7 @@ public class IndexFilterConfig {
             final String path = request.getURI()
                     .getPath();
 
-           if (Objects.equals(StringUtils.lastChar(path), '/')) {
+            if (Objects.equals(StringUtils.lastChar(path), '/')) {
                 return chain.filter(exchange.mutate()
                         .request(request.mutate()
                                 .path(path + "index.html")
