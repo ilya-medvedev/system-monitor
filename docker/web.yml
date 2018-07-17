@@ -1,0 +1,2 @@
+sensor:
+  url: "http://server:8080/sensors"

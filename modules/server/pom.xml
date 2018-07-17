@@ -15,14 +15,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>medvedev.ilya.monitor</groupId>
-            <artifactId>util</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>web</artifactId>
-        </dependency>
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sensor</artifactId>
         </dependency>
@@ -34,8 +26,6 @@
     </dependencies>
 
     <build>
-        <finalName>system-monitor</finalName>
-
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -43,19 +33,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>docker</id>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
