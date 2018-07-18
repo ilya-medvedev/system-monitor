@@ -14,11 +14,10 @@ Real-time monitoring tool
     cd system-monitor
 ### Build
     mvn -T 1C clean package
-### Build Docker Containers
-#### Change Directory
-    cd docker
-#### Run Docker Containers
+### Run Docker Containers
     docker-compose up
+### Open Monitoring Page in your favorite browser
+    http://localhost:8080/
 ### Remote Debug
 1. Open "Run/Debug Configurations" Window in [IntelliJ IDEA](https://www.jetbrains.com/idea/) (Run -> Edit Configurations...)
 2. Click "+" to Add New Configuration
