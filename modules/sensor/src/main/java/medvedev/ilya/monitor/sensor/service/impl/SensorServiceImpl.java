@@ -1,5 +1,6 @@
 package medvedev.ilya.monitor.sensor.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.SensorInfo;
 import medvedev.ilya.monitor.sensor.SensorMessage;
@@ -9,12 +10,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class SensorServiceImpl implements SensorService {
     private final List<Sensor> sensors;
-
-    public SensorServiceImpl(final List<Sensor> sensors) {
-        this.sensors = sensors;
-    }
 
     public synchronized SensorMessage currentValue() {
         final long time = System.currentTimeMillis();
@@ -25,9 +23,9 @@ public class SensorServiceImpl implements SensorService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        return new SensorMessage.Builder()
-                .setTime(time)
-                .setValues(sensorInfoList)
+        return SensorMessage.builder()
+                .time(time)
+                .values(sensorInfoList)
                 .build();
     }
 

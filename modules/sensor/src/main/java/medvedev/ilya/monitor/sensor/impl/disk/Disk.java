@@ -1,5 +1,7 @@
 package medvedev.ilya.monitor.sensor.impl.disk;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.SensorInfo;
 import medvedev.ilya.monitor.sensor.SensorValue;
@@ -12,18 +14,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Disk implements Sensor {
     private final File file;
     private final short line;
     private final float rate;
 
     private SensorLoad preSensorLoad = null;
-
-    private Disk(final File file, final short line, final float rate) {
-        this.file = file;
-        this.line = line;
-        this.rate = rate;
-    }
 
     public static Disk byFile(final File file, final String name, final short size, final byte period) {
         Short line = null;
@@ -104,19 +101,19 @@ public class Disk implements Sensor {
         final float readValue = (read - preRead) * rate;
         final float writenValue = (written - preWriten) * rate;
 
-        final SensorValue readSensorValue = new SensorValue.Builder()
-                .setName("read")
-                .setValue(readValue)
+        final SensorValue readSensorValue = SensorValue.builder()
+                .name("read")
+                .value(readValue)
                 .build();
-        final SensorValue writeSensorValue = new SensorValue.Builder()
-                .setName("write")
-                .setValue(writenValue)
+        final SensorValue writeSensorValue = SensorValue.builder()
+                .name("write")
+                .value(writenValue)
                 .build();
         final List<SensorValue> sensorValues = Arrays.asList(readSensorValue, writeSensorValue);
 
-        return new SensorInfo.Builder()
-                .setName("disk")
-                .setValues(sensorValues)
+        return SensorInfo.builder()
+                .name("disk")
+                .values(sensorValues)
                 .build();
     }
 

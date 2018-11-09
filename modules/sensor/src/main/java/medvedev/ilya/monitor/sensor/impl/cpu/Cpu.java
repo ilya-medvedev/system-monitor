@@ -1,7 +1,10 @@
 package medvedev.ilya.monitor.sensor.impl.cpu;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.SensorInfo;
+import medvedev.ilya.monitor.sensor.SensorInfo.SensorInfoBuilder;
 import medvedev.ilya.monitor.sensor.SensorValue;
 import medvedev.ilya.monitor.sensor.impl.exception.SensorFileNotFound;
 
@@ -12,18 +15,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Cpu implements Sensor {
     private final File file;
     private final short cpu;
     private final short stats;
 
     private final Map<String, SensorLoad> preSensorLoadMap = new ConcurrentHashMap<>();
-
-    private Cpu(final File file, final short cpu, final short stats) {
-        this.file = file;
-        this.cpu = cpu;
-        this.stats = stats;
-    }
 
     public static Cpu byFile(final File file) {
         short cpu = 0;
@@ -57,8 +55,8 @@ public class Cpu implements Sensor {
 
     @Override
     public SensorInfo sensorInfo() {
-        final SensorInfo.Builder builder = new SensorInfo.Builder()
-                .setName("cpu");
+        final SensorInfoBuilder builder = SensorInfo.builder()
+                .name("cpu");
 
         try (final Scanner scanner = new Scanner(file)) {
             final ArrayList<SensorValue> sensorValues = new ArrayList<>();
@@ -87,7 +85,7 @@ public class Cpu implements Sensor {
                 scanner.nextLine();
             }
 
-            builder.setValues(sensorValues);
+            builder.values(sensorValues);
         } catch (final FileNotFoundException e) {
             throw new SensorFileNotFound(e);
         }
@@ -116,9 +114,9 @@ public class Cpu implements Sensor {
             value = 100.0F * (used - preUsed) / (total - preTotal);
         }
 
-        return new SensorValue.Builder()
-                .setName(name)
-                .setValue(value)
+        return SensorValue.builder()
+                .name(name)
+                .value(value)
                 .build();
     }
 

@@ -1,5 +1,7 @@
 package medvedev.ilya.monitor.sensor.impl.net;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.SensorInfo;
 import medvedev.ilya.monitor.sensor.SensorValue;
@@ -12,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Net implements Sensor {
     private final File file;
 
@@ -23,14 +26,6 @@ public class Net implements Sensor {
     private final byte period;
 
     private SensorLoad preSensorLoad = null;
-
-    private Net(final File file, final short receive, final short transmit, final short line, final byte period) {
-        this.file = file;
-        this.receive = receive;
-        this.transmit = transmit;
-        this.line = line;
-        this.period = period;
-    }
 
     public static Net byFile(final File file, final String name, final byte period) {
         Short receive = null;
@@ -142,19 +137,19 @@ public class Net implements Sensor {
         final float receiveValue = ((float) (receive - preReceive)) / period;
         final float transmitValue = ((float) (transmit - preTransmit)) / period;
 
-        final SensorValue downSensorValue = new SensorValue.Builder()
-                .setName("down")
-                .setValue(receiveValue)
+        final SensorValue downSensorValue = SensorValue.builder()
+                .name("down")
+                .value(receiveValue)
                 .build();
-        final SensorValue upSensorValue = new SensorValue.Builder()
-                .setName("up")
-                .setValue(transmitValue)
+        final SensorValue upSensorValue = SensorValue.builder()
+                .name("up")
+                .value(transmitValue)
                 .build();
         final List<SensorValue> sensorValues = Arrays.asList(downSensorValue, upSensorValue);
 
-        return new SensorInfo.Builder()
-                .setName("net")
-                .setValues(sensorValues)
+        return SensorInfo.builder()
+                .name("net")
+                .values(sensorValues)
                 .build();
     }
 

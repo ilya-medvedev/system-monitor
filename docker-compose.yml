@@ -2,17 +2,17 @@ version: '3'
 
 services:
   server:
-    image: openjdk:8-jre-slim
+    image: openjdk:11-jre-slim
     container_name: system-monitor-server
     command: "/opt/system-monitor/system-monitor"
     ports:
       - "5005:5005"
     volumes:
-      - ./modules/server/target/server.jar:/opt/system-monitor/system-monitor
-      - ./modules/server/docker/server.conf:/opt/system-monitor/system-monitor.conf
+      - ./modules/server/target/server.jar:/opt/system-monitor/system-monitor:ro
+      - ./modules/server/docker/server.conf:/opt/system-monitor/system-monitor.conf:ro
 
   web:
-    image: openjdk:8-jre-slim
+    image: openjdk:11-jre-slim
     container_name: system-monitor-web
     command: "/opt/system-monitor/system-monitor"
     depends_on:
@@ -20,6 +20,6 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./modules/web/target/web.jar:/opt/system-monitor/system-monitor
-      - ./modules/web/docker/web.conf:/opt/system-monitor/system-monitor.conf
-      - ./modules/web/docker/web.yml:/opt/system-monitor/config/application.yml
+      - ./modules/web/target/web.jar:/opt/system-monitor/system-monitor:ro
+      - ./modules/web/docker/web.conf:/opt/system-monitor/system-monitor.conf:ro
+      - ./modules/web/docker/web.yml:/opt/system-monitor/config/application.yml:ro

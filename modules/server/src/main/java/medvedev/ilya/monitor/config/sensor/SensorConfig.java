@@ -23,10 +23,8 @@ public class SensorConfig {
     }
 
     @Bean
-    public SensorHandler sensorHandler(
-            final SensorService sensorService,
-            @Value("${monitor.period}") final byte period
-    ) {
+    public SensorHandler sensorHandler(final SensorService sensorService,
+                                       @Value("${monitor.period}") final byte period) {
         return SensorHandler.create(sensorService, period);
     }
 

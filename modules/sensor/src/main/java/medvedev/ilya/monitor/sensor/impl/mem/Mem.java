@@ -1,5 +1,7 @@
 package medvedev.ilya.monitor.sensor.impl.mem;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import medvedev.ilya.monitor.sensor.Sensor;
 import medvedev.ilya.monitor.sensor.SensorInfo;
 import medvedev.ilya.monitor.sensor.SensorValue;
@@ -15,18 +17,12 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Mem implements Sensor {
     private final File file;
     private final int memTotal;
     private final int swapTotal;
     private final Map<Short, Boolean> memLineMap;
-
-    private Mem(final File file, final int memTotal, final int swapTotal, final Map<Short, Boolean> memLineMap) {
-        this.file = file;
-        this.memTotal = memTotal;
-        this.swapTotal = swapTotal;
-        this.memLineMap = memLineMap;
-    }
 
     public static Mem byFile(final File file) {
         Integer memTotal = null;
@@ -133,9 +129,9 @@ public class Mem implements Sensor {
         final SensorValue swap = calculateValue("swap", swapTotal, swapFree);
         final List<SensorValue> sensorValues = Arrays.asList(mem, swap);
 
-        return new SensorInfo.Builder()
-                .setName("mem")
-                .setValues(sensorValues)
+        return SensorInfo.builder()
+                .name("mem")
+                .values(sensorValues)
                 .build();
     }
 
@@ -144,9 +140,9 @@ public class Mem implements Sensor {
 
         final float value = 100.0F * used / total;
 
-        return new SensorValue.Builder()
-                .setName(name)
-                .setValue(value)
+        return SensorValue.builder()
+                .name(name)
+                .value(value)
                 .build();
     }
 }
