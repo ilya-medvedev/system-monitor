@@ -136,9 +136,14 @@ public class Mem implements Sensor {
     }
 
     private static SensorValue calculateValue(final String name, final int total, final int free) {
-        final int used = total - free;
+        final float value;
+        if (total == 0) {
+            value = 0;
+        } else {
+            final int used = total - free;
 
-        final float value = 100.0F * used / total;
+            value = 100.0F * used / total;
+        }
 
         return SensorValue.builder()
                 .name(name)
