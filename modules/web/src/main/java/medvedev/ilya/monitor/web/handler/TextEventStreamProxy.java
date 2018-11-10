@@ -21,7 +21,8 @@ public class TextEventStreamProxy implements HandlerFunction<ServerResponse> {
                         .body(
                                 WebClient.create(path).get()
                                         .exchange()
-                                        .flatMapMany(clientResponse -> clientResponse.bodyToFlux(String.class)),
+                                        .flatMapMany(clientResponse -> clientResponse.bodyToFlux(String.class))
+                                        .share(),
                                 String.class
                         )
         );
