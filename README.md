@@ -1,21 +1,22 @@
 # System Monitor
+[![Build Status](https://travis-ci.org/imedvedko/system-monitor.svg?branch=master)](https://travis-ci.org/imedvedko/system-monitor)
+[![Coverage Status](https://coveralls.io/repos/github/imedvedko/system-monitor/badge.svg?branch=master)](https://coveralls.io/github/imedvedko/system-monitor?branch=master)
+
 Real-time monitoring tool
 
 ## Runbook
 ### Development Environment
 1. [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-2. JDK 8 ([Oracle](http://www.oracle.com/technetwork/java/javase/downloads/index.html) or [OpenJDK](http://openjdk.java.net/install/))
-3. [Maven](https://maven.apache.org/download.cgi) 3
-4. [Docker](https://docs.docker.com/install/)
-5. [Docker Compose](https://docs.docker.com/compose/install/)
+2. [Docker](https://docs.docker.com/install/)
+3. [Docker Compose](https://docs.docker.com/compose/install/)
 ### Download
     git clone git@github.com:imedvedko/system-monitor.git
 ### Change Directory
     cd system-monitor
 ### Build
-    mvn -T 1C clean package
+    docker-compose up build 
 ### Run Docker Containers
-    docker-compose up
+    docker-compose up server web
 ### Open Monitoring Page in your favorite browser
     http://localhost:8080/
 ### Remote Debug

@@ -1,6 +1,14 @@
 version: '3'
 
 services:
+  build:
+    image: maven:3-jdk-11-slim
+    container_name: system-monitor-build
+    working_dir: /root/adprove/
+    command: "mvn -T C1 clean package"
+    volumes:
+      - .:/root/adprove/:delegated
+
   server:
     image: openjdk:11-jre-slim
     container_name: system-monitor-server
