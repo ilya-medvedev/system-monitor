@@ -121,7 +121,7 @@ public class Cpu implements Sensor {
     }
 
     @Override
-    public void clear() {
+    public void clean() {
         preSensorLoadMap.clear();
     }
 }

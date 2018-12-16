@@ -32,6 +32,6 @@ public class SensorServiceImpl implements SensorService {
     public synchronized void cleanup() {
         sensors.parallelStream()
                 .unordered()
-                .forEach(Sensor::clear);
+                .forEach(Sensor::clean);
     }
 }

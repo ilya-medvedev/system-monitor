@@ -154,7 +154,7 @@ public class Net implements Sensor {
     }
 
     @Override
-    public void clear() {
+    public void clean() {
         preSensorLoad = null;
     }
 }
