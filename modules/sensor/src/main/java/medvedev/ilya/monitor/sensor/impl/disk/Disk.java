@@ -118,7 +118,7 @@ public class Disk implements Sensor {
     }
 
     @Override
-    public void clear() {
+    public void clean() {
         preSensorLoad = null;
     }
 }
